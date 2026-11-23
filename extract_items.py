@@ -60,7 +60,8 @@ CMD_LEN = {
     0xC8: 5, 0xC9: 1, 0xCA: 1, 0xCB: 1, 0xCC: 6, 0xCD: 3, 0xCE: 3, 0xCF: 1, 0xD0: 3, 0xD1: 8,
     0xD2: 4, 0xD3: 3, 0xD4: 1, 0xD5: 3, 0xD6: 1, 0xD7: 8, 0xD8: 1, 0xD9: 1, 0xDA: 1, 0xDB: 5,
     0xDC: 2, 0xDD: 4, 0xDE: 4, 0xDF: 5, 0xE0: 8, 0xE1: 4, 0xE2: 6,
-    0xE5: 5, 0xE7: 3,   # expansion additions seen in this ROM (speaker name ptr, 2-byte arg cmd)
+    0xE5: 5, 0xE6: 1, 0xE7: 3,   # this ROM: E5 = set speaker name (ptr), E6 = clear it (no args), E7 = questmenu case, quest
+    0xE8: 6, 0xE9: 2, 0xEA: 1,   # subquestmenu, returnqueststate, + one more (lengths read from their handlers)
 }
 END_CMDS = {0x02, 0x03, 0x05, 0x08, 0x0C, 0x0D, 0x24}   # end, return, goto, gotostd, ...
 BRANCH_PTR_AT = {0x04: 1, 0x05: 1, 0x06: 2, 0x07: 2}      # call, goto, goto_if, call_if
@@ -126,10 +127,127 @@ def iter_maps(rom, mg):
             n += 1
 
 
+# ------------------------------------------------------ callnative args --
+# Expansion implements many script commands as `callnative Func` followed by
+# inline arguments that Func reads itself (givemon, getobjectxy, checkspecies,
+# createfollowernpc, ...). The ROM doesn't say how many bytes each native eats,
+# so it's read from the native's Thumb code: calls to ScriptReadHalfword (+2) /
+# ScriptReadWord (+4) and inlined byte reads (scriptPtr += n). The guess is then
+# checked against the call sites (does the script still parse after it?) and
+# nudged by up to +-4 bytes if it doesn't.
+MAX_NATIVE_ARGS = 24
+CREATEMON = "createmon"   # givemon/createmon: side, slot, species, level, u32 flags, one u16 per flag bit
+
+
+def _rom_off(fn):
+    return (fn & ~1) - (0x0A000000 if fn >= 0x0A000000 else ROM_BASE)
+
+
+def _reader_kind(rom, o):
+    """2 if the function at o is ScriptReadHalfword, 4 if ScriptReadWord, else 0."""
+    hw = [rom.u16(o + 2 * i) for i in range(8)]
+    if hw[0] == 0xB530: hw = hw[1:]
+    if hw[:6] == [0x6883, 0x1C5A, 0x6082, 0x1C99, 0x781A, 0x6081]:
+        return 4 if hw[6] == 0x1CDC else 2
+    return 0
+
+
+def native_arg_guess(rom, fn, max_hw=600):
+    o = _rom_off(fn)
+    if not (0 <= o < rom.L - 4): return 0
+    total, grp, i = 0, None, 0
+    while i < max_hw and o + 2 * i + 4 < rom.L:
+        h = rom.u16(o + 2 * i)
+        if (h & 0xF800) == 0xF000 and (rom.u16(o + 2 * i + 2) & 0xF800) == 0xF800:   # bl
+            hi, lo = h & 0x7FF, rom.u16(o + 2 * i + 2) & 0x7FF
+            if hi & 0x400: hi -= 0x800
+            t = o + 2 * i + 4 + (hi << 12) + (lo << 1)
+            if 0 <= t < rom.L - 16: total += _reader_kind(rom, t)
+            i += 2; continue
+        if (h & 0xFF87) == 0x4700 or (h & 0xFF00) == 0xBD00: break                  # bx / pop {pc}
+        if (h & 0xFFC0) == 0x6880:                                                  # ldr rd, [rn, #8]
+            total += grp or 0; grp = 0
+        if (h & 0xFFC0) == 0x6080 and grp is not None:                             # str rd, [rn, #8]
+            rd = h & 7
+            for k in range(1, 6):
+                h2 = rom.u16(o + 2 * (i - k))
+                if (h2 & 0xFE00) == 0x1C00 and (h2 & 7) == rd: grp = max(grp, (h2 >> 6) & 7); break
+                if (h2 & 0xF800) == 0x3000 and ((h2 >> 8) & 7) == rd: grp = max(grp, h2 & 0xFF); break
+        i += 1
+    return total + (grp or 0)
+
+
+def createmon_args_ok(rom, o):
+    side, slot, species, level, flags = rom.d[o], rom.d[o + 1], rom.u16(o + 2), rom.u16(o + 4), rom.u32(o + 6)
+    return side <= 1 and slot <= 6 and 0 < species < 0x1000 and 0 < level <= 100 and flags < (1 << 25)
+
+
+def native_len(rom, pc, native_args):
+    """Inline argument bytes after `callnative <ptr>` at pc."""
+    n = native_args.get(rom.u32(pc + 1), 0)
+    if n == CREATEMON:
+        return 10 + 2 * bin(rom.u32(pc + 11)).count("1")
+    return n
+
+
+def cmd_len(rom, pc, native_args):
+    op = rom.d[pc]
+    ln = CMD_LEN.get(op, 0)
+    if op == 0x23 and ln: ln += native_len(rom, pc, native_args)
+    return ln
+
+
+def parses_ok(rom, pc, native_args, max_cmds=40):
+    """Does the byte stream at pc look like real script commands up to an end?"""
+    d = rom.d
+    for n in range(max_cmds):
+        if not (0 <= pc < rom.L): return False
+        op = d[pc]
+        ln = cmd_len(rom, pc, native_args)
+        if not ln or op in (0x00, 0x01, 0x0A, 0x0B, 0x0E): return False
+        if op in BRANCH_PTR_AT and not rom.isptr(rom.u32(pc + BRANCH_PTR_AT[op])): return False
+        if op == 0x0F and not rom.isptr(rom.u32(pc + 2)): return False
+        if op in (0x23, 0x24) and not (rom.u32(pc + 1) >> 24 in (0x08, 0x09, 0x0A, 0x0B)): return False
+        if op in (0x16, 0x17, 0x18, 0x21) and not (0x4000 <= rom.u16(pc + 1) < 0x4200 or 0x8000 <= rom.u16(pc + 1) < 0x8020):
+            return False
+        if op in (0x29, 0x2A, 0x2B) and rom.u16(pc + 1) >= 0x4100: return False   # 0x4000+ = special flags
+        if op == 0x23 and rom.u32(pc + 1) not in native_args and n >= 2: return True
+        if op in END_CMDS: return True
+        pc += ln
+    return True   # max_cmds sensible commands in a row
+
+
+def learn_native_args(rom, starts, rounds=4):
+    """starts: script offsets. Returns {native target pointer: inline arg bytes (or CREATEMON)}."""
+    native_args = {}
+    for _ in range(rounds):
+        sites = {}
+        w = Walker(rom, native_args)
+        for s in starts:
+            for pc in w.walk(s)[3]:
+                if rom.d[pc] == 0x23: sites.setdefault(rom.u32(pc + 1), set()).add(pc)
+        new = {}
+        for t, pcs in sites.items():
+            if t in native_args: continue
+            if all(createmon_args_ok(rom, pc + 5) for pc in pcs) and \
+               sum(parses_ok(rom, pc + 15 + 2 * bin(rom.u32(pc + 11)).count("1"), native_args) for pc in pcs) * 2 >= len(pcs):
+                new[t] = CREATEMON; continue
+            g = native_arg_guess(rom, t)
+            cands = sorted({max(0, min(MAX_NATIVE_ARGS, g + k)) for k in range(-4, 5)}, key=lambda L: abs(L - g))
+            score = lambda L: sum(parses_ok(rom, pc + 5 + L, native_args) for pc in pcs)
+            best = max(cands, key=lambda L: (score(L), -abs(L - g)))
+            sg = score(g)   # trust the code-derived guess unless most call sites disagree
+            new[t] = best if sg * 2 < len(pcs) and score(best) > sg else g
+        if not new: break
+        native_args.update(new)
+    return native_args
+
+
 # ----------------------------------------------------------- script walker --
 class Walker:
-    def __init__(self, rom):
+    def __init__(self, rom, native_args=None):
         self.rom = rom
+        self.native_args = native_args or {}
 
     def walk(self, start, max_nodes=4000):
         """Follow a script and its call/goto branches. Returns
@@ -145,7 +263,7 @@ class Walker:
             while 0 <= pc < rom.L and pc not in seen and steps < max_nodes:
                 seen.add(pc); steps += 1
                 op = d[pc]
-                ln = CMD_LEN.get(op, 0)
+                ln = cmd_len(rom, pc, self.native_args)
                 if not ln: break
                 visited.add(pc)
                 if op == 0x1A:   # setorcopyvar var, value
@@ -173,37 +291,12 @@ class Walker:
         return gifts, finds, dynamic, visited
 
 
-# ------------------------------------------------------------------- main --
-def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    here = os.path.dirname(os.path.abspath(__file__))
-    ap.add_argument("rom", nargs="?", default=os.path.join(here, "input", "game.gba"))
-    ap.add_argument("-o", "--output", default=os.path.join(here, "output", "items.csv"))
-    ap.add_argument("--map-groups", type=lambda s: int(s, 0))
-    ap.add_argument("--region-map-entries", type=lambda s: int(s, 0))
-    ap.add_argument("--no-orphans", action="store_true", help="drop 'gift?' rows")
-    a = ap.parse_args()
-    log = lambda *x: print(*x, file=sys.stderr)
-
-    rom = Rom(a.rom)
-    ib, istride, icount, item_name = find_items(rom)
-    log("gItemsInfo        @ 0x%X  (%d items, %d bytes each)" % (ib, icount, istride))
-    mg = a.map_groups if a.map_groups is not None else find_map_groups(rom)[0]
-    rme = a.region_map_entries if a.region_map_entries is not None else find_region_map_entries(rom)
-    names = mapsec_names(rom, rme) if rme is not None else []
-    log("gMapGroups        @ 0x%X" % mg)
-    log("gRegionMapEntries @ %s (%d names)" % (hex(rme) if rme is not None else "-", len(names)))
-
-    maps = list(iter_maps(rom, mg))
-    log("maps              : %d" % len(maps))
-
-    def route(mh):
-        sec = rom.d[mh + 0x14]
-        return names[sec] if sec < len(names) and names[sec] else "MAPSEC_%d" % sec
-
-    # --- collect every script entry point together with where it lives
+# ------------------------------------------------------- script entries --
+def collect_entries(rom, maps):
+    """Every script entry point in the map events, plus hidden items.
+    entries: (scriptOffset, (group, num, mapHeader), x, y, kind, eventOffset)
+    kind is object / trigger / sign / mapscript (map scripts have no x/y)."""
     entries = []   # (scriptOffset, map, x, y, kind, extra)
-    balls = []     # (map, x, y, objOffset)
     hidden = []
     script_use = Counter()
     for g, n, mh in maps:
@@ -259,8 +352,43 @@ def main():
                 else:
                     entries.append((p, (g, n, mh), "", "", "mapscript", None))
 
+    return entries, hidden, script_use
+
+
+# ------------------------------------------------------------------- main --
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    here = os.path.dirname(os.path.abspath(__file__))
+    ap.add_argument("rom", nargs="?", default=os.path.join(here, "input", "game.gba"))
+    ap.add_argument("-o", "--output", default=os.path.join(here, "output", "items.csv"))
+    ap.add_argument("--map-groups", type=lambda s: int(s, 0))
+    ap.add_argument("--region-map-entries", type=lambda s: int(s, 0))
+    ap.add_argument("--no-orphans", action="store_true", help="drop 'gift?' rows")
+    a = ap.parse_args()
+    log = lambda *x: print(*x, file=sys.stderr)
+
+    rom = Rom(a.rom)
+    ib, istride, icount, item_name = find_items(rom)
+    log("gItemsInfo        @ 0x%X  (%d items, %d bytes each)" % (ib, icount, istride))
+    mg = a.map_groups if a.map_groups is not None else find_map_groups(rom)[0]
+    rme = a.region_map_entries if a.region_map_entries is not None else find_region_map_entries(rom)
+    names = mapsec_names(rom, rme) if rme is not None else []
+    log("gMapGroups        @ 0x%X" % mg)
+    log("gRegionMapEntries @ %s (%d names)" % (hex(rme) if rme is not None else "-", len(names)))
+
+    maps = list(iter_maps(rom, mg))
+    log("maps              : %d" % len(maps))
+
+    def route(mh):
+        sec = rom.d[mh + 0x14]
+        return names[sec] if sec < len(names) and names[sec] else "MAPSEC_%d" % sec
+
+    entries, hidden, script_use = collect_entries(rom, maps)
+
     # --- walk scripts
-    W = Walker(rom)
+    native_args = learn_native_args(rom, sorted({e[0] for e in entries}))
+    log("callnatives       : %d, %d with inline arguments" % (len(native_args), sum(1 for v in native_args.values() if v)))
+    W = Walker(rom, native_args)
     rows, reached = [], set()
     cache = {}
     for s, (g, n, mh), x, y, kind, o in entries:

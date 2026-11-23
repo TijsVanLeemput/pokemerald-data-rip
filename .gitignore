@@ -5,3 +5,4 @@ input/*
 !input/.gitkeep
 output/*
 !output/.gitkeep
+internal_docs
