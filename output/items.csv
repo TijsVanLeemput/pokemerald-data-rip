@@ -1,0 +1,693 @@
+route,mapId,x,y,source,itemName,quantity,flag,scriptAddress,notes
+Pastoral Rd.,0.0,19,2,itemBall,Max Revive,1,0x40F,0x83210C8
+Pastoral Rd.,0.0,3,28,itemBall,Ether,1,0x410,0x83210C8
+PEWTER CITY,0.1,11,37,gift,Powder Jar,1,,0x8268BA7
+SAFFRON CITY,0.2,29,9,gift,Basement Key,1,,0x826AFA5
+SAFFRON CITY,0.2,29,9,gift,TM24,1,,0x826AFDB
+SAFFRON CITY,0.2,28,19,itemBall,X Speed,1,0x45C,0x83210C8
+Blackstone Rd.,0.3,30,10,gift,Great Ball,1,,0x826C4E9
+Blackstone Rd.,0.3,36,51,itemBall,X Defense,1,0x411,0x83210C8
+Blackstone Rd.,0.3,30,9,gift,Great Ball,1,,0x826C4E9
+Blackstone Rd.,0.3,31,10,gift,Great Ball,1,,0x826C4E9
+Blackstone Rd.,0.3,30,11,gift,Great Ball,1,,0x826C4E9
+Blackstone Rd.,0.3,30,12,gift,Great Ball,1,,0x826C4E9
+NEW MAUVILLE,0.5,61,36,itemBall,Max Repel,1,0x412,0x83210C8
+Obsidian Path,0.6,62,35,itemBall,Net Ball,1,0x413,0x83210C8
+Obsidian Path,0.6,23,13,gift,King's Rock,1,,0x8270603
+SOOTOPOLIS CITY,0.7,9,43,gift,Iapapa Berry,1,,0x8271956
+SOOTOPOLIS CITY,0.7,9,43,gift,Figy Berry,1,,0x8271935
+SOOTOPOLIS CITY,0.7,31,18,gift,HM07,1,,0x8271E33
+Littoral Rd.,0.10,13,7,gift,Potion,1,,0x8274950
+MONEAN CHAMBER,0.11,12,14,gift,Fishing Rod,1,,0x8274FC3
+NAVEL ROCK,0.12,,,gift,Go-Goggles,1,,0x8275FA9
+NAVEL ROCK,0.12,,,gift,Go-Goggles,1,,0x8275F84
+Thirtieth Road,0.17,11,15,itemBall,Potion,1,0x3E8,0x83210C8
+Blackstone Rd.,0.18,50,5,itemBall,Guard Spec.,1,0x45A,0x83210C8
+Blackstone Rd.,0.18,64,7,itemBall,PP Up,1,0x471,0x83210C8
+Blackstone Rd.,0.19,37,8,gift,Chesto Berry,1,,0x8278C68
+Blackstone Rd.,0.19,39,15,itemBall,PP Up,1,0x3EA,0x83210C8
+Blackstone Rd.,0.19,8,19,gift,White Herb,1,,0x8278CA9
+Blackstone Rd.,0.19,29,53,itemBall,Poké Ball,1,0x421,0x83210C8
+Blackstone Rd.,0.19,37,22,itemBall,X Accuracy,1,0x45B,0x83210C8
+Blackstone Rd.,0.19,5,8,itemBall,Potion,1,0x46F,0x83210C8
+Blackstone Rd.,0.19,5,26,gift,TM09,1,,0x8278D33
+Pastoral Rd.,0.20,8,73,itemBall,Iron,1,0x3EB,0x83210C8
+Littoral Rd.,0.21,29,14,itemBall,Protein,1,0x3EC,0x83210C8
+Vine Grotto,0.23,42,4,itemBall,Star Piece,1,0x473,0x83210C8
+Fiesta Rd.,0.24,27,46,itemBall,PP Up,1,0x3ED,0x83210C8
+Fiesta Rd.,0.24,25,18,gift,Soft Sand,1,,0x827AA5E
+Fiesta Rd.,0.24,25,6,itemBall,Potion,1,0x474,0x83210C8
+Obsidian Path,0.25,30,69,itemBall,Dire Hit,1,0x3EF,0x83210C8
+Obsidian Path,0.25,26,47,itemBall,Rare Candy,1,0x3EE,0x83210C8
+Obsidian Path,0.25,6,38,itemBall,Elixir,1,0x475,0x83210C8
+Obsidian Path,0.25,33,56,gift,Dowsing Machine,1,,0x827BD7A
+Obsidian Path,0.25,34,56,gift,Dowsing Machine,1,,0x827BD7A
+Obsidian Path,0.25,35,56,gift,Dowsing Machine,1,,0x827BD7A
+Pebble Cross,0.26,23,8,gift,Razz Berry,1,,0x827D2C6
+Pebble Cross,0.26,33,104,itemBall,TM37,1,0x3F0,0x83210C8
+Pebble Cross,0.26,12,54,itemBall,Stardust,1,0x3F1,0x83210C8
+Pebble Cross,0.26,3,114,itemBall,HP Up,1,0x3F2,0x83210C8
+Pebble Cross,0.26,13,20,gift,TM43,1,,0x83076D7
+Pebble Cross,0.26,19,118,itemBall,Elixir,1,0x476,0x83210C8
+Oxide Trail,0.27,14,43,itemBall,Nugget,1,0x3F3,0x83210C8
+Jangala Rd.,0.28,53,7,itemBall,Max Ether,1,0x3F4,0x83210C8
+Jangala Rd.,0.28,79,5,itemBall,Super Repel,1,0x3F5,0x83210C8
+Jangala Rd.,0.28,15,15,itemBall,Hyper Potion,1,0x477,0x83210C8
+Bois-Esprit,0.29,7,6,itemBall,Rare Candy,1,0x3F6,0x83210C8
+Bois-Esprit,0.29,11,37,itemBall,Protein,1,0x3F7,0x83210C8
+Bois-Esprit,0.29,19,11,gift,TM05,1,,0x827EE45
+Bois-Esprit,0.29,31,19,itemBall,Energy Powder,1,0x488,0x83210C8
+Passaqua Wy.,0.30,20,60,itemBall,Super Potion,1,0x3F8,0x83210C8
+Passaqua Wy.,0.30,18,7,itemBall,TM01,1,0x3F9,0x83210C8
+Passaqua Wy.,0.30,23,29,itemBall,Iron,1,0x3FA,0x83210C8
+Passaqua Wy.,0.30,31,56,itemBall,Great Ball,1,0x45E,0x83210C8
+Passaqua Wy.,0.30,26,67,itemBall,PP Up,1,0x489,0x83210C8
+Passaqua Wy.,0.30,12,14,itemBall,Heal Powder,1,0x478,0x83210C8
+Azur Channel,0.31,19,6,itemBall,Ether,1,0x3FB,0x83210C8
+Azur Channel,0.31,10,17,itemBall,Repel,1,0x3FC,0x83210C8
+Azur Channel,0.31,80,8,itemBall,HP Up,1,0x3FD,0x83210C8
+Azur Channel,0.31,46,11,gift,Repeat Ball,1,,0x827F7DB
+Azur Channel,0.31,55,12,itemBall,X Sp. Atk,1,0x3E9,0x83210C8
+Azur Channel,0.31,34,7,itemBall,Potion,1,0x47A,0x83210C8
+Navy Channel,0.32,16,18,itemBall,Great Ball,1,0x3FE,0x83210C8
+Navy Channel,0.32,9,1,itemBall,Revive,1,0x3FF,0x83210C8
+Ultramarine Channel,0.33,28,8,gift,Good Rod,1,,0x8280C7F
+Ultramarine Channel,0.33,69,7,itemBall,Hyper Potion,1,0x461,0x83210C8
+Cerulean Coast,0.34,12,121,itemBall,Super Repel,1,0x400,0x83210C8
+Cerulean Coast,0.34,4,96,itemBall,Zinc,1,0x401,0x83210C8
+Cerulean Coast,0.34,29,53,itemBall,Elixir,1,0x402,0x83210C8
+Cerulean Coast,0.34,25,76,itemBall,Leaf Stone,1,0x403,0x83210C8
+Cerulean Coast,0.34,8,18,itemBall,Rare Candy,1,0x404,0x83210C8
+Cerulean Coast,0.34,33,117,itemBall,Hyper Potion,1,0x405,0x83210C8
+Cerulean Coast,0.34,3,56,itemBall,Hyper Potion,1,0x452,0x83210C8
+Cerulean Coast,0.34,19,5,itemBall,Nugget,1,0x46E,0x83210C8
+Cerulean Coast,0.34,24,42,itemBall,Elixir,1,0x47B,0x83210C8
+Cerulean Coast,0.34,25,31,gift,HM02,1,,0x82815D9
+Cerulean Coast,0.34,26,31,gift,HM02,1,,0x82815D9
+Herron Prairie,0.35,20,55,itemBall,Nugget,1,0x406,0x83210C8
+Herron Prairie,0.35,7,89,itemBall,Full Heal,1,0x407,0x83210C8
+Herron Prairie,0.35,22,13,itemBall,Nest Ball,1,0x454,0x83210C8
+Herron Prairie,0.35,23,82,itemBall,Hyper Potion,1,0x453,0x83210C8
+Herron Prairie,0.35,13,15,gift,Devon Scope,1,,0x828290C
+Herron Prairie,0.35,24,33,itemBall,Revive,1,0x47C,0x83210C8
+Xatu's Nest,0.36,55,10,itemBall,Carbos,1,0x44F,0x83210C8
+Xatu's Nest,0.36,60,10,itemBall,Revive,1,0x47D,0x83210C8
+Xatu's Nest,0.36,38,13,itemBall,Zinc,1,0x47E,0x83210C8
+Hydropolis,0.38,31,8,itemBall,Calcium,1,0x408,0x83210C8
+Hydropolis,0.38,108,13,gift,TM19,1,,0x8283617
+Hydropolis,0.38,27,18,itemBall,Ultra Ball,1,0x450,0x83210C8
+Hydropolis,0.38,75,9,itemBall,Elixir,1,0x455,0x83210C8
+Hydropolis,0.38,43,15,itemBall,PP Up,1,0x480,0x83210C8
+Hydropolis,0.38,57,16,itemBall,Revival Herb,1,0x481,0x83210C8
+Challenger Rd.,0.39,28,12,itemBall,Red Shard,1,0x444,0x83210C8
+Challenger Rd.,0.39,31,53,itemBall,Blue Shard,1,0x445,0x83210C8
+Challenger Rd.,0.39,58,11,itemBall,Yellow Shard,1,0x42A,0x83210C8
+Mellow Abysses,0.40,46,17,itemBall,Big Pearl,1,0x482,0x83210C8
+The Ironair,0.41,14,1,itemBall,Green Shard,1,0x451,0x83210C8
+Rocheval,0.42,14,6,itemBall,Zinc,1,0x40A,0x83210C8
+Rocheval,0.42,64,39,itemBall,Carbos,1,0x40B,0x83210C8
+Rocheval,0.42,13,20,itemBall,Rare Candy,1,0x483,0x83210C8
+ROUTE 132,0.47,10,11,itemBall,Rare Candy,1,0x40C,0x83210C8
+ROUTE 132,0.47,20,27,itemBall,Protein,1,0x484,0x83210C8
+ROUTE 133,0.48,53,12,itemBall,Big Pearl,1,0x40D,0x83210C8
+ROUTE 133,0.48,8,10,itemBall,Star Piece,1,0x40E,0x83210C8
+ROUTE 133,0.48,48,28,itemBall,Max Revive,1,0x485,0x83210C8
+ROUTE 134,0.49,50,17,itemBall,Carbos,1,0x486,0x83210C8
+ROUTE 134,0.49,22,27,itemBall,Star Piece,1,0x487,0x83210C8
+Rocheval,0.69,,,gift,Potion,1,,0x835C511
+Sapphire City,0.76,41,61,itemBall,Black Glasses,1,0x293,0x83210C8
+Sapphire City,0.76,18,71,itemBall,Rare Candy,1,0x294,0x83210C8
+Sapphire City,0.76,62,10,itemBall,TM39,1,0x4BD,0x83210C8
+Sapphire City,0.77,26,17,gift,Plane Ticket,1,,0x8361604
+Sapphire City,0.77,31,17,gift,Plane Ticket,1,,0x8361604
+Sapphire City,0.78,13,38,gift,Potion,1,,0x836232B
+Sapphire City,0.78,82,28,itemBall,Paralyze Heal,1,0x2B,0x83210C8
+Sapphire City,0.82,7,37,gift,Charcoal,1,,0x8363066
+Sapphire City,0.82,12,23,gift,Poké Doll,1,,0x83630B3
+Sapphire City,0.87,7,5,gift,TM27,1,,0x8363A77
+Sapphire City,0.93,14,8,gift,Lemonade,5,,0x8364CE2
+Sapphire City,0.94,16,13,gift,TM50,1,,0x836546C
+Sapphire City,0.94,16,13,gift,TM26,1,,0x836544F
+Sapphire City,0.94,16,13,gift,TM24,1,,0x8365432
+Sapphire City,0.94,14,13,gift,Coin Case,1,,0x836530F
+Sapphire City,0.94,13,13,gift,Coin Case,1,,0x836530F
+Sapphire City,0.94,12,13,gift,Coin Case,1,,0x836530F
+Sapphire City,0.94,11,13,gift,Coin Case,1,,0x836530F
+Sapphire City,0.94,10,13,gift,Coin Case,1,,0x836530F
+Thirtieth Road,0.95,15,12,gift,Fishing Rod,1,,0x8365D5D
+Thirtieth Road,0.95,11,6,itemBall,Altarianite,1,0x9A,0x83210C8
+Petal Pass,0.96,22,19,itemBall,TM19,1,0x292,0x83210C8
+Cruzeira,0.103,19,2,gift,Miracle Seed,1,,0x8368ED1
+Pastoral Rd.,0.107,10,8,gift,Heracronite,1,,0x836B625
+Pastoral Rd.,0.108,15,12,gift,TM47,1,,0x836B925
+Pastoral Rd.,0.108,22,38,itemBall,Pinsirite,1,0x7D,0x83210C8
+Pastoral Rd.,0.108,51,34,itemBall,Scizorite,1,0x7F,0x83210C8
+Ohulinn,0.110,25,7,gift,TM02,1,,0x836C327
+Cali,0.117,24,19,gift,Big Nugget,1,,0x836DB89
+Cali,0.119,5,3,itemBall,Eka's Scarf,1,0x49,0x83210C8
+Blackstone Rd.,0.121,14,7,itemBall,TM10,1,0x495,0x83210C8
+Obsidian Path,0.122,28,28,itemBall,TM30,1,0x496,0x83210C8
+Blackstone Rd.,0.123,29,36,itemBall,Reaper Cloth,1,0x29B,0x83210C8
+Blackstone Rd.,0.123,17,9,itemBall,TM17,1,0x4BE,0x83210C8
+Vikkelson,0.126,37,38,gift,Pearl,1,,0x837076B
+Vikkelson,0.126,29,48,gift,Fresh Water,1,,0x837065C
+Sapphire City,1.0,2,6,gift,Amulet Coin,1,,0x8322631
+Sapphire City,1.0,,,gift,S.S. Ticket,1,,0x8322731
+Sapphire City,1.2,8,6,gift,Amulet Coin,1,,0x8322631
+Sapphire City,1.2,,,gift,S.S. Ticket,1,,0x8322731
+Sapphire City,1.4,,,gift,Poké Ball,5,,0x82882C9
+Sapphire City,1.4,,,gift,Poké Ball,5,,0x828829C
+Vikkelson,1.17,7,12,gift,TM01,1,,0x83744CC
+Pebble Cross,1.19,91,21,gift,Ring Target,1,,0x8374C7C
+Pebble Cross,1.19,25,30,itemBall,TM21,1,0x296,0x83210C8
+Pebble Cross,1.19,37,32,itemBall,Aggronite,1,0x82,0x83210C8
+Frux,1.20,12,13,gift,TM04,1,,0x8375C56
+Frux,1.20,11,6,gift,Mining Tools,1,,0x8375B64
+Oxide Trail,1.26,28,5,itemBall,TM23,1,0x4BF,0x83210C8
+The Ironair,1.27,36,17,itemBall,Steelixite,1,0x84,0x83210C8
+The Ironair,1.28,13,29,itemBall,TM09,1,0x29F,0x83210C8
+Indigo Channel,1.29,41,8,itemBall,TM22,1,0x4C0,0x83210C8
+Jangala Rd.,1.30,43,10,itemBall,Swampertite,1,0x2A5,0x83210C8
+Jangala Rd.,1.30,37,45,itemBall,TM18,1,0x2A6,0x83210C8
+Jangala Rd.,1.30,12,84,itemBall,PP Up,1,0x2A7,0x83210C8
+Jangala Rd.,1.30,41,50,itemBall,Big Root,1,0x2A8,0x83210C8
+Passaqua Wy.,1.37,8,11,itemBall,Carbos,1,0x2A9,0x83210C8
+Passaqua Wy.,1.37,36,22,itemBall,Nest Ball,1,0x2AA,0x83210C8
+Passaqua Wy.,1.38,23,6,itemBall,TM36,1,0x2AB,0x83210C8
+Passwacan,1.39,38,14,itemBall,Electirizer,1,0x2AC,0x83210C8
+Passwacan,1.43,7,3,gift,TM05,1,,0x837DEC4
+Bois-Esprit,1.45,32,46,itemBall,TM20,1,0x4A0,0x83210C8
+Bois-Esprit,1.45,10,19,itemBall,Gardevoirite,1,0x85,0x83210C8
+Bois-Esprit,1.46,7,4,gift,TM12,1,,0x837F63B
+Azur Channel,1.47,19,37,itemBall,Sea Incense,1,0x2AD,0x83210C8
+Azur Channel,1.48,24,19,gift,Dawn Stone,1,,0x837FDE4
+Azur Channel,1.48,22,23,itemBall,Soft Sand,1,0x2AE,0x83210C8
+Azur Channel,1.48,78,10,itemBall,Assault Vest,1,0x2AF,0x83210C8
+Oparque,1.49,22,28,itemBall,TM11,1,0x2B4,0x83210C8
+Navy Channel,1.52,30,6,itemBall,Ability Capsule,1,0x2B7,0x83210C8
+Navy Channel,1.52,85,14,itemBall,Sharpedonite,1,0x2B8,0x83210C8
+Xatu's Nest,1.55,12,10,itemBall,TM38,1,0x4BA,0x83210C8
+Xatu's Nest,1.60,6,2,gift,TM31,1,,0x8382228
+Herron Prairie,1.64,23,6,gift,Oran Berry,1,,0x8382A7D
+Herron Prairie,1.64,12,7,gift,Cheri Berry,1,,0x8382AAD
+Beryl Channel,1.72,27,9,itemBall,TM07,1,0x49D,0x83210C8
+Virimante,1.75,16,19,itemBall,TM29,1,0x4B6,0x83210C8
+Virimante,1.77,2,4,itemBall,Galladite,1,0x8C,0x83210C8
+Virimante,1.79,1,4,gift,TM44,1,,0x8386C53
+Hydropolis,1.83,48,23,gift,Exp. Candy L,10,,0x8387C39
+Hydropolis,1.83,8,4,itemBall,Safety Goggles,1,0x4A2,0x83210C8
+Hydropolis,1.83,45,3,itemBall,TM48,1,0x4A3,0x83210C8
+The Ironair,1.84,14,17,itemBall,TM37,1,0x4BB,0x83210C8
+Challenger Rd.,1.85,18,28,itemBall,Focus Sash,1,0x4A8,0x83210C8
+Challenger Rd.,1.85,43,30,itemBall,TM25,1,0x4A9,0x83210C8
+Challenger Rd.,1.87,7,4,itemBall,TM03,1,0x492,0x83210C8
+Challenger Rd.,1.89,11,4,itemBall,Magmarizer,1,0x4AB,0x83210C8
+Challenger Rd.,1.90,33,6,itemBall,Never-Melt Ice,1,0x9C,0x83210C8
+Challenger Rd.,1.90,8,5,itemBall,Glalitite,1,0x9B,0x83210C8
+Challenger Rd.,1.91,7,38,itemBall,TM35,1,0x4B1,0x83210C8
+Challenger Rd.,1.91,53,6,itemBall,Leftovers,1,0x4B2,0x83210C8
+Challenger Rd.,1.91,24,32,itemBall,Heat Rock,1,0x4DA,0x83210C8
+Challenger Rd.,1.92,40,35,itemBall,TM13,1,0x4AC,0x83210C8
+Challenger Rd.,1.92,16,29,itemBall,Abomasite,1,0x4AD,0x83210C8
+Council HQ,1.97,0,2,itemBall,Lucarionite,1,0x99,0x83210C8
+Vine Grotto,1.101,30,13,gift,Root Fossil,1,,0x838E6CF
+Sapphire City,1.102,7,5,gift,TM51,1,,0x838E868
+Obsidian Path,1.105,8,2,itemBall,House Key,1,0x4C3,0x83210C8
+Jangala Rd.,1.106,24,12,itemBall,Sceptilite,1,0x4D5,0x83210C8
+Bleak Rift,1.108,36,17,itemBall,Deep Sea Scale,1,0x4E2,0x83210C8
+Bleak Rift,1.108,32,44,itemBall,Mystic Water,1,0x4E3,0x83210C8
+Bleak Rift,1.108,19,16,itemBall,Dragon Scale,1,0x4E1,0x83210C8
+Bleak Rift,1.108,73,26,itemBall,Shell Bell,1,0x4E4,0x83210C8
+Bleak Rift,1.108,13,53,itemBall,Escape Rope,1,0x4E0,0x83210C8
+Route 7,1.110,59,22,itemBall,Audinite,1,0x4EF,0x83210C8
+Route 7,1.110,27,40,itemBall,Zinc,1,0x4EA,0x83210C8
+Route 7,1.110,11,13,itemBall,Lum Berry,1,0x4ED,0x83210C8
+Route 7,1.110,33,16,itemBall,PP Max,1,0x4EE,0x83210C8
+Route 7,1.117,8,4,itemBall,Tea,1,0x4F9,0x83210C8
+Celestial Tower,1.118,9,12,itemBall,Spell Tag,1,0x1AA,0x83210C8
+Celestial Tower,1.118,6,7,itemBall,Weakness Policy,1,0x1AB,0x83210C8
+Vikkelson,1.120,16,4,itemBall,Persianite,1,0x83,0x83210C8
+Cruzeira,2.3,1,2,gift,Plane Ticket,1,,0x8307BFD
+Ohulinn,3.2,1,2,gift,Plane Ticket,1,,0x8307BFD
+Ohulinn,3.3,4,3,gift,TM08,1,,0x828A7D0
+Ohulinn,3.3,4,3,gift,TM08,1,,0x828A7AD
+Ohulinn,3.4,8,6,gift,TM36,1,,0x828B7E4
+Ohulinn,3.5,6,5,gift,Silk Scarf,1,,0x828C233
+Cali,4.0,7,5,gift,Charcoal,1,,0x828C50A
+Cali,4.1,13,9,gift,TM50,1,,0x828C825
+Cali,4.1,13,9,gift,TM50,1,,0x828C849
+Cali,4.6,1,2,gift,Plane Ticket,1,,0x8307BFD
+Glasville,5.5,1,2,gift,Plane Ticket,1,,0x8307BFD
+Glasville,5.6,6,4,gift,TM27,1,,0x828F02B
+Vikkelson,6.0,0,5,gift,TM45,1,,0x828FB5C
+Vikkelson,6.5,1,2,gift,Plane Ticket,1,,0x8307BFD
+Frux,7.1,1,2,gift,Plane Ticket,1,,0x8307BFD
+Frux,7.3,3,5,gift,TM21,1,,0x8291925
+Frux,7.3,3,5,gift,TM27,1,,0x82918EC
+Bammobo,8.0,,,gift,HM03,1,,0x8292328
+Bammobo,8.1,4,2,gift,TM42,1,,0x8292FD4
+Bammobo,8.1,4,2,gift,Enigma Berry,1,,0x8292F01
+Bammobo,8.5,1,2,gift,Plane Ticket,1,,0x8307BFD
+Passwacan,9.2,1,5,gift,TM41,1,,0x8296BEA
+Passwacan,9.6,6,2,gift,Soothe Bell,1,,0x829835F
+Passwacan,9.6,6,5,gift,Yellow Scarf,1,,0x829825C
+Passwacan,9.6,6,5,gift,Green Scarf,1,,0x829822B
+Passwacan,9.6,6,5,gift,Pink Scarf,1,,0x82981FA
+Passwacan,9.6,6,5,gift,Dead-Seer,1,,0x82981C9
+Passwacan,9.6,6,5,gift,Eka's Scarf,1,,0x8298198
+Passwacan,9.7,9,4,gift,TM46,1,,0x82990B9
+Passwacan,9.9,6,13,gift,Deep Sea Scale,1,,0x829AFAC
+Passwacan,9.9,6,13,gift,Deep Sea Tooth,1,,0x829AF6C
+Passwacan,9.12,1,2,gift,Plane Ticket,1,,0x8307BFD
+Oparque,10.0,5,2,gift,TM34,1,,0x829C181
+Oparque,10.0,5,2,gift,TM34,1,,0x829C1A5
+Oparque,10.1,2,5,gift,Acro Bike,1,,0x829CF0C
+Oparque,10.1,2,5,gift,Mach Bike,1,,0x829CEE7
+Oparque,10.1,2,5,gift,Acro Bike,1,,0x829CFC1
+Oparque,10.1,2,5,gift,Mach Bike,1,,0x829CFA0
+Oparque,10.2,4,4,gift,HM06,1,,0x829DC2B
+Oparque,10.3,13,2,gift,TM13,1,,0x829E37E
+Oparque,10.3,13,2,gift,TM24,1,,0x829E344
+Oparque,10.3,13,2,gift,TM35,1,,0x829E30A
+Oparque,10.3,13,2,gift,TM29,1,,0x829E2D0
+Oparque,10.3,13,2,gift,TM32,1,,0x829E296
+Oparque,10.4,4,5,gift,Coin Case,1,,0x829EF62
+Oparque,10.6,1,2,gift,Plane Ticket,1,,0x8307BFD
+Glorray,11.2,17,5,gift,Exp. Share,1,,0x82A0847
+Glorray,11.2,15,5,gift,Exp. Share,1,,0x82A0847
+Glorray,11.2,,,gift,Letter,1,,0x82A077A
+Glorray,11.3,5,2,gift,TM39,1,,0x82A1264
+Glorray,11.4,5,3,gift,Quick Claw,1,,0x82A22E2
+Glorray,11.6,1,2,gift,Plane Ticket,1,,0x8307BFD
+Glorray,11.11,7,5,gift,HM01,1,,0x82A3F0D
+Glorray,11.14,7,3,gift,Premier Ball,1,,0x82A431A
+Virimante,12.1,15,2,gift,TM40,1,,0x82A4985
+Virimante,12.1,15,2,gift,TM40,1,,0x82A49A9
+Virimante,12.3,1,2,gift,Plane Ticket,1,,0x8307BFD
+Virimante,12.5,2,3,gift,TM10,1,,0x82A5C2C
+Virimante,12.7,1,3,gift,Mental Herb,1,,0x82A60D8
+Pkmn League HQ,13.4,14,2,gift,Case,1,,0x830ADB4
+Pkmn League HQ,13.4,14,2,gift,Luxury Ball,1,,0x830ADF0
+Pkmn League HQ,13.4,14,2,gift,Contest Pass,1,,0x82A89BB
+Pkmn League HQ,13.4,26,5,gift,Pecha Berry,1,,0x8323C09
+Pkmn League HQ,13.4,27,5,gift,Pecha Berry,1,,0x8323873
+Pkmn League HQ,13.7,1,2,gift,Plane Ticket,1,,0x8307BFD
+Pkmn League HQ,13.13,0,4,gift,TM44,1,,0x82AD176
+Council HQ,14.0,23,7,gift,TM04,1,,0x82AED40
+Council HQ,14.0,23,7,gift,TM04,1,,0x82AED64
+Council HQ,14.0,24,7,gift,TM04,1,,0x82AED40
+Council HQ,14.0,24,7,gift,TM04,1,,0x82AED64
+Council HQ,14.4,1,2,gift,Plane Ticket,1,,0x8307BFD
+Council HQ,14.6,4,4,gift,Super Rod,1,,0x82B0B3F
+Council HQ,14.7,,,gift,HM08,1,,0x82B0D5F
+Council HQ,14.9,6,6,gift,Sun Stone,1,,0x82B160D
+Council HQ,14.9,6,6,gift,Sun Stone,1,,0x82B164C
+SOOTOPOLIS CITY,15.0,8,2,gift,TM03,1,,0x82B3647
+SOOTOPOLIS CITY,15.0,8,2,gift,TM03,1,,0x82B3624
+SOOTOPOLIS CITY,15.3,1,2,gift,Plane Ticket,1,,0x8307BFD
+SOOTOPOLIS CITY,15.5,2,4,gift,TM31,1,,0x82B50CA
+SOOTOPOLIS CITY,15.12,2,4,gift,Elixir,1,,0x82B5A93
+SOOTOPOLIS CITY,15.12,5,4,gift,Elixir,1,,0x82B5A02
+Indigo Channel,16.13,1,2,gift,Plane Ticket,1,,0x8307BFD
+Indigo Channel,16.14,1,2,gift,Plane Ticket,1,,0x8307BFD
+Blackstone Rd.,17.1,7,3,gift,Wailmer Pail,1,,0x82B8C03
+Pebble Cross,18.0,7,4,gift,Macho Brace,1,,0x82B8C9F
+Bois-Esprit,20.0,3,2,gift,TM28,1,,0x82B9532
+METEOR FALLS,24.0,2,4,itemBall,TM23,1,0x414,0x83210C8
+METEOR FALLS,24.0,2,14,itemBall,Moon Stone,1,0x416,0x83210C8
+METEOR FALLS,24.0,27,5,itemBall,Full Heal,1,0x415,0x83210C8
+METEOR FALLS,24.0,26,32,itemBall,PP Up,1,0x417,0x83210C8
+METEOR FALLS,24.3,5,3,itemBall,TM02,1,0x438,0x83210C8
+RUSTURF TUNNEL,24.4,3,1,itemBall,Poké Ball,1,0x418,0x83210C8
+RUSTURF TUNNEL,24.4,30,2,itemBall,Max Ether,1,0x419,0x83210C8
+RUSTURF TUNNEL,24.4,14,5,gift,Devon Parts,1,,0x82BB968
+RUSTURF TUNNEL,24.4,,,gift,HM04,1,,0x82BB758
+Navy Channel,24.7,36,9,gift,HM05,1,,0x82BC316
+Navy Channel,24.7,17,7,itemBall,Escape Rope,1,0x41A,0x83210C8
+Navy Channel,24.8,15,21,itemBall,Poké Ball,1,0x41B,0x83210C8
+Navy Channel,24.9,4,4,itemBall,Repel,1,0x41D,0x83210C8
+Navy Channel,24.9,29,4,itemBall,Rare Candy,1,0x41E,0x83210C8
+Navy Channel,24.10,7,8,gift,TM47,1,,0x82BC53F
+PETALBURG WOODS,24.11,45,7,itemBall,Great Ball,1,0x420,0x83210C8
+PETALBURG WOODS,24.11,35,20,itemBall,X Attack,1,0x41F,0x83210C8
+PETALBURG WOODS,24.11,4,8,itemBall,Ether,1,0x422,0x83210C8
+PETALBURG WOODS,24.11,4,26,itemBall,Paralyze Heal,1,0x45D,0x83210C8
+PETALBURG WOODS,24.11,33,5,gift,Miracle Seed,1,,0x82BCB16
+PETALBURG WOODS,24.11,26,23,gift,Great Ball,1,,0x82BCA41
+PETALBURG WOODS,24.11,27,23,gift,Great Ball,1,,0x82BCA41
+Bleak Rift,24.12,19,39,gift,Lava Cookie,1,,0x82BD880
+Bleak Rift,24.12,14,6,gift,Meteorite,1,,0x82BDA91
+Beryl Channel,24.13,23,24,itemBall,Burn Heal,1,0x42E,0x83210C8
+Passaqua Wy.,24.14,8,3,itemBall,TM06,1,0x443,0x83210C8
+Passaqua Wy.,24.14,7,32,itemBall,Fire Stone,1,0x457,0x83210C8
+MT. PYRE,24.15,21,2,gift,Cleanse Tag,1,,0x82BFA70
+MT. PYRE,24.16,0,10,itemBall,Ultra Ball,1,0x469,0x83210C8
+MT. PYRE,24.17,0,7,itemBall,Super Repel,1,0x460,0x83210C8
+MT. PYRE,24.18,3,11,itemBall,Sea Incense,1,0x46A,0x83210C8
+MT. PYRE,24.19,6,11,itemBall,Lax Incense,1,0x41C,0x83210C8
+MT. PYRE,24.20,6,9,itemBall,TM30,1,0x441,0x83210C8
+MT. PYRE,24.21,27,15,itemBall,Max Potion,1,0x431,0x83210C8
+MT. PYRE,24.21,19,40,itemBall,TM48,1,0x432,0x83210C8
+MT. PYRE,24.22,22,7,gift,Magma Emblem,1,,0x82C0D48
+MT. PYRE,24.22,23,7,gift,Magma Emblem,1,,0x82C0D48
+MT. PYRE,24.22,24,7,gift,Magma Emblem,1,,0x82C0D48
+Deep Seas,24.24,29,12,itemBall,Max Elixir,1,0x42F,0x83210C8
+Deep Seas,24.24,15,9,itemBall,Master Ball,1,0x464,0x83210C8
+Deep Seas,24.24,15,10,itemBall,Nugget,1,0x46C,0x83210C8
+Deep Seas,24.25,3,13,itemBall,Nest Ball,1,0x430,0x83210C8
+SEAFLOOR CAVERN,24.36,14,5,itemBall,TM26,1,0x442,0x83210C8
+VICTORY ROAD,24.43,40,26,itemBall,Max Elixir,1,0x43C,0x83210C8
+VICTORY ROAD,24.43,37,39,itemBall,PP Up,1,0x43D,0x83210C8
+VICTORY ROAD,24.44,42,8,itemBall,TM29,1,0x43E,0x83210C8
+VICTORY ROAD,24.44,32,3,itemBall,Full Restore,1,0x43F,0x83210C8
+VICTORY ROAD,24.45,13,8,itemBall,Full Heal,1,0x440,0x83210C8
+SHOAL CAVE,24.46,30,3,itemBall,Big Pearl,1,0x439,0x83210C8
+SHOAL CAVE,24.46,18,15,gift,Shell Bell,1,,0x82C5EB5
+SHOAL CAVE,24.47,26,14,itemBall,Rare Candy,1,0x43A,0x83210C8
+SHOAL CAVE,24.47,31,8,gift,Shoal Salt,1,,0x82C6106
+SHOAL CAVE,24.47,14,26,gift,Shoal Salt,1,,0x82C6142
+SHOAL CAVE,24.47,41,20,gift,Shoal Shell,1,,0x82C6034
+SHOAL CAVE,24.47,41,10,gift,Shoal Shell,1,,0x82C6070
+SHOAL CAVE,24.47,6,9,gift,Shoal Shell,1,,0x82C60A2
+SHOAL CAVE,24.47,16,13,gift,Shoal Shell,1,,0x82C60D4
+SHOAL CAVE,24.48,13,12,itemBall,Ice Heal,1,0x43B,0x83210C8
+SHOAL CAVE,24.48,11,11,gift,Shoal Salt,1,,0x82C6194
+SHOAL CAVE,24.49,11,4,gift,Focus Band,1,,0x82C6235
+SHOAL CAVE,24.49,18,2,gift,Shoal Salt,1,,0x82C61F0
+NEW MAUVILLE,24.53,32,25,itemBall,Ultra Ball,1,0x433,0x83210C8
+NEW MAUVILLE,24.53,16,22,itemBall,Escape Rope,1,0x434,0x83210C8
+NEW MAUVILLE,24.53,39,4,itemBall,Thunder Stone,1,0x456,0x83210C8
+NEW MAUVILLE,24.53,17,10,itemBall,Full Heal,1,0x462,0x83210C8
+NEW MAUVILLE,24.53,2,11,itemBall,Paralyze Heal,1,0x463,0x83210C8
+Rocheval,24.56,4,5,itemBall,Harbor Mail,1,0x447,0x83210C8
+Rocheval,24.58,6,7,itemBall,Escape Rope,1,0x448,0x83210C8
+Rocheval,24.59,13,3,itemBall,Dive Ball,1,0x449,0x83210C8
+Rocheval,24.61,4,4,itemBall,TM13,1,0x44A,0x83210C8
+Rocheval,24.62,4,4,itemBall,Revive,1,0x44B,0x83210C8
+Rocheval,24.63,0,6,itemBall,Storage Key,1,0x44C,0x83210C8
+Rocheval,24.66,41,4,itemBall,Luxury Ball,1,0x435,0x83210C8
+Rocheval,24.66,16,10,itemBall,Scanner,1,0x436,0x83210C8
+Rocheval,24.66,5,11,itemBall,TM18,1,0x44E,0x83210C8
+Rocheval,24.66,31,11,itemBall,Water Stone,1,0x44D,0x83210C8
+SCORCHED SLAB,24.73,7,5,itemBall,TM11,1,0x437,0x83210C8
+SHOAL CAVE,24.83,12,8,itemBall,TM07,1,0x458,0x83210C8
+SHOAL CAVE,24.83,12,21,itemBall,Never-Melt Ice,1,0x459,0x83210C8
+MAGMA HIDEOUT,24.86,3,20,itemBall,Rare Candy,1,0x47F,0x83210C8
+MAGMA HIDEOUT,24.88,21,7,itemBall,Max Elixir,1,0x48C,0x83210C8
+MAGMA HIDEOUT,24.88,14,6,itemBall,Full Restore,1,0x48D,0x83210C8
+MAGMA HIDEOUT,24.89,9,16,itemBall,Nugget,1,0x48E,0x83210C8
+MAGMA HIDEOUT,24.90,5,9,itemBall,PP Max,1,0x48F,0x83210C8
+MAGMA HIDEOUT,24.91,3,7,itemBall,Max Revive,1,0x490,0x83210C8
+MAGMA HIDEOUT,24.92,9,19,itemBall,Escape Rope,1,0x423,0x83210C8
+MIRAGE TOWER,24.97,5,4,gift,Root Fossil,1,,0x82CA0CB
+MIRAGE TOWER,24.97,7,4,gift,Claw Fossil,1,,0x82CA117
+Fiesta Rd.,24.98,132,10,gift,Root Fossil,1,,0x82CA2F7
+Fiesta Rd.,24.98,132,10,gift,Claw Fossil,1,,0x82CA2DB
+Petal Pass,24.99,32,38,itemBall,HP Up,1,0x48A,0x83210C8
+Petal Pass,24.100,14,5,itemBall,Carbos,1,0x48B,0x83210C8
+MAPSEC_87,25.28,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.29,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.30,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.31,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.32,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.33,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.34,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.35,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.36,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.37,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.38,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.39,,,gift,Luxury Ball,1,,0x830BD81
+MAPSEC_87,25.43,28,5,gift,TM49,1,,0x82CBE4A
+SAFARI ZONE,26.0,33,7,itemBall,TM22,1,0x446,0x83210C8
+SAFARI ZONE,26.1,7,6,itemBall,Calcium,1,0x45F,0x83210C8
+SAFARI ZONE,26.2,0,37,itemBall,Max Revive,1,0x46B,0x83210C8
+SAFARI ZONE,26.12,8,17,itemBall,Nugget,1,0x491,0x83210C8
+SAFARI ZONE,26.13,31,15,itemBall,Big Pearl,1,0x492,0x83210C8
+Cruzeira,26.46,2,3,gift,Starf Berry,1,,0x82F2DE2
+Cruzeira,26.46,2,3,gift,Lansat Berry,1,,0x82F2D7C
+Cruzeira,26.54,1,2,gift,Plane Ticket,1,,0x8307BFD
+Fiesta Rd.,28.0,6,2,gift,Soda Pop,6,,0x82F85D8
+Fiesta Rd.,28.0,6,2,gift,Soda Pop,1,,0x82F8655
+Obsidian Path,29.0,6,2,gift,PP Max,1,,0x82F91D7
+Obsidian Path,29.0,6,2,gift,Magnet,1,,0x82F91AB
+Obsidian Path,29.0,6,2,gift,TM12,1,,0x82F917F
+Obsidian Path,29.0,6,2,gift,Smoke Ball,1,,0x82F9153
+Obsidian Path,29.0,6,2,gift,Hard Stone,1,,0x82F9127
+Obsidian Path,29.0,6,2,gift,Timer Ball,1,,0x82F90FB
+Obsidian Path,29.0,6,2,gift,Rare Candy,1,,0x82F90CF
+Obsidian Path,29.1,4,5,gift,PP Max,1,,0x82FA0E1
+Obsidian Path,29.1,4,5,gift,Magnet,1,,0x82FA0A5
+Obsidian Path,29.1,4,5,gift,TM12,1,,0x82FA069
+Obsidian Path,29.1,4,5,gift,Smoke Ball,1,,0x82FA02D
+Obsidian Path,29.1,4,5,gift,Hard Stone,1,,0x82F9FF1
+Obsidian Path,29.1,4,5,gift,Timer Ball,1,,0x82F9FB5
+Obsidian Path,29.1,4,5,gift,Rare Candy,1,,0x82F9F79
+Obsidian Path,29.3,9,4,itemBall,Orange Mail,1,0x424,0x83210C8
+Obsidian Path,29.4,8,17,itemBall,Wave Mail,1,0x426,0x83210C8
+Obsidian Path,29.4,3,13,itemBall,Harbor Mail,1,0x425,0x83210C8
+Obsidian Path,29.5,1,2,itemBall,Wood Mail,1,0x428,0x83210C8
+Obsidian Path,29.5,4,2,itemBall,Shadow Mail,1,0x427,0x83210C8
+Obsidian Path,29.6,2,5,itemBall,Mech Mail,1,0x429,0x83210C8
+Obsidian Path,29.8,11,21,itemBall,Glitter Mail,1,0x42B,0x83210C8
+Obsidian Path,29.9,5,12,itemBall,Tropic Mail,1,0x42C,0x83210C8
+Obsidian Path,29.10,2,2,itemBall,Bead Mail,1,0x42D,0x83210C8
+Jangala Rd.,30.0,2,3,gift,Soot Sack,1,,0x82FE199
+Hydropolis,31.0,7,4,gift,Belue Berry,1,,0x82FEEAA
+Hydropolis,31.0,7,4,gift,Durin Berry,1,,0x82FEE79
+Hydropolis,31.0,7,4,gift,Watmel Berry,1,,0x82FEE48
+Hydropolis,31.0,7,4,gift,Pamtre Berry,1,,0x82FEE17
+Hydropolis,31.0,7,4,gift,Spelon Berry,1,,0x82FEDE6
+Pastoral Rd.,0.0,11,29,hidden,Rare Candy,1,hidden#95,,
+NEW MAUVILLE,0.5,36,31,hidden,Heart Scale,1,hidden#27,,
+NEW MAUVILLE,0.5,61,7,hidden,PP Up,1,hidden#43,,
+NEW MAUVILLE,0.5,64,31,hidden,Poké Ball,1,hidden#75,,
+NAVEL ROCK,0.12,4,5,hidden,Ice Heal,1,hidden#0,,
+MT. EMBER,0.13,2,15,hidden,Nugget,1,hidden#28,,
+Blackstone Rd.,0.19,7,6,hidden,Super Potion,1,hidden#44,,
+Blackstone Rd.,0.19,3,9,hidden,Poké Ball,1,hidden#62,,
+Blackstone Rd.,0.19,14,55,hidden,Potion,1,hidden#37,,
+Blackstone Rd.,0.19,16,72,hidden,Antidote,1,hidden#85,,
+Blackstone Rd.,0.19,16,64,hidden,Heart Scale,1,hidden#88,,
+Pastoral Rd.,0.20,15,68,hidden,Heart Scale,1,hidden#89,,
+Pastoral Rd.,0.20,5,56,hidden,Big Pearl,1,hidden#111,,
+Littoral Rd.,0.21,41,11,hidden,Poké Ball,1,hidden#63,,
+Littoral Rd.,0.21,53,12,hidden,Stardust,1,hidden#46,,
+Littoral Rd.,0.21,68,15,hidden,Heart Scale,1,hidden#47,,
+Vine Grotto,0.23,38,14,hidden,Rare Candy,1,hidden#86,,
+Fiesta Rd.,0.24,16,23,hidden,Revive,1,hidden#50,,
+Fiesta Rd.,0.24,33,5,hidden,Heart Scale,1,hidden#52,,
+Fiesta Rd.,0.24,9,10,hidden,Great Ball,1,hidden#51,,
+Fiesta Rd.,0.24,28,20,hidden,Ether,1,hidden#64,,
+Fiesta Rd.,0.24,13,16,hidden,Heart Scale,1,hidden#90,,
+Fiesta Rd.,0.24,8,42,hidden,Heart Scale,1,hidden#91,,
+Obsidian Path,0.25,35,39,hidden,Revive,1,hidden#54,,
+Obsidian Path,0.25,33,45,hidden,Great Ball,1,hidden#53,,
+Obsidian Path,0.25,4,35,hidden,Poké Ball,1,hidden#65,,
+Obsidian Path,0.25,37,67,hidden,Full Heal,1,hidden#55,,
+Pebble Cross,0.26,26,70,hidden,Stardust,1,hidden#2,,
+Pebble Cross,0.26,19,55,hidden,Protein,1,hidden#56,,
+Pebble Cross,0.26,35,66,hidden,Rare Candy,1,hidden#57,,
+Jangala Rd.,0.28,66,3,hidden,Ether,1,hidden#3,,
+Jangala Rd.,0.28,22,5,hidden,TM32,1,hidden#30,,
+Jangala Rd.,0.28,73,3,hidden,Nugget,1,hidden#98,,
+Bois-Esprit,0.29,20,57,hidden,Carbos,1,hidden#4,,
+Bois-Esprit,0.29,7,30,hidden,Revive,1,hidden#42,,
+Passaqua Wy.,0.30,15,49,hidden,Heart Scale,1,hidden#97,,
+Azur Channel,0.31,22,9,hidden,Super Potion,1,hidden#45,,
+Azur Channel,0.31,70,13,hidden,Black Glasses,1,hidden#96,,
+Navy Channel,0.32,3,18,hidden,Repel,1,hidden#72,,
+Ultramarine Channel,0.33,31,13,hidden,Iron,1,hidden#67,,
+Ultramarine Channel,0.33,12,14,hidden,Heart Scale,1,hidden#66,,
+Cerulean Coast,0.34,17,82,hidden,Calcium,1,hidden#5,,
+Cerulean Coast,0.34,38,63,hidden,Ultra Ball,1,hidden#6,,
+Cerulean Coast,0.34,26,120,hidden,Full Heal,1,hidden#68,,
+Cerulean Coast,0.34,20,29,hidden,Max Ether,1,hidden#87,,
+Herron Prairie,0.35,9,1,hidden,Rare Candy,1,hidden#71,,
+Herron Prairie,0.35,31,11,hidden,Revive,1,hidden#84,,
+Herron Prairie,0.35,0,86,hidden,Rare Candy,1,hidden#69,,
+Herron Prairie,0.35,24,42,hidden,Zinc,1,hidden#70,,
+Xatu's Nest,0.36,23,10,hidden,HP Up,1,hidden#39,,
+Xatu's Nest,0.36,58,3,hidden,Nugget,1,hidden#40,,
+Xatu's Nest,0.36,72,5,hidden,Full Heal,1,hidden#73,,
+Xatu's Nest,0.36,68,8,hidden,Max Revive,1,hidden#100,,
+Hydropolis,0.38,75,1,hidden,Super Repel,1,hidden#7,,
+Hydropolis,0.38,12,1,hidden,Revive,1,hidden#41,,
+Hydropolis,0.38,91,15,hidden,Hyper Potion,1,hidden#74,,
+Hydropolis,0.38,139,15,hidden,PP Up,1,hidden#99,,
+Hydropolis,0.38,138,18,hidden,Rare Candy,1,hidden#110,,
+Cape East,0.43,49,9,hidden,Heart Scale,1,hidden#92,,
+Cape East,0.43,57,21,hidden,Heart Scale,1,hidden#93,,
+Cape East,0.43,31,33,hidden,Heart Scale,1,hidden#94,,
+UNDERWATER,0.50,42,51,hidden,Carbos,1,hidden#8,,
+UNDERWATER,0.50,14,40,hidden,Green Shard,1,hidden#9,,
+UNDERWATER,0.50,66,34,hidden,Pearl,1,hidden#10,,
+UNDERWATER,0.50,64,54,hidden,Big Pearl,1,hidden#11,,
+UNDERWATER,0.50,70,64,hidden,Heart Scale,1,hidden#13,,
+UNDERWATER,0.50,42,5,hidden,Calcium,1,hidden#36,,
+UNDERWATER,0.50,45,36,hidden,Heart Scale,1,hidden#38,,
+UNDERWATER,0.51,30,17,hidden,Heart Scale,1,hidden#14,,
+UNDERWATER,0.51,41,19,hidden,Ultra Ball,1,hidden#15,,
+UNDERWATER,0.51,63,19,hidden,Stardust,1,hidden#16,,
+UNDERWATER,0.51,10,36,hidden,Pearl,1,hidden#17,,
+UNDERWATER,0.51,11,39,hidden,Iron,1,hidden#19,,
+UNDERWATER,0.51,12,35,hidden,Yellow Shard,1,hidden#18,,
+UNDERWATER,0.51,65,60,hidden,Big Pearl,1,hidden#20,,
+UNDERWATER,0.51,9,77,hidden,Blue Shard,1,hidden#12,,
+UNDERWATER,0.52,12,42,hidden,Star Piece,1,hidden#21,,
+UNDERWATER,0.52,50,36,hidden,HP Up,1,hidden#22,,
+UNDERWATER,0.52,34,72,hidden,Heart Scale,1,hidden#23,,
+UNDERWATER,0.52,72,20,hidden,Red Shard,1,hidden#24,,
+UNDERWATER,0.53,38,19,hidden,Protein,1,hidden#25,,
+UNDERWATER,0.53,69,18,hidden,Pearl,1,hidden#26,,
+Cerulean Coast,0.60,22,14,hidden,Strange Souvenir,2,hidden#165,,
+Sapphire City,0.76,7,7,hidden,Air Balloon,126,hidden#52,,underfoot
+Sapphire City,0.76,0,63,hidden,Clever Feather,1,hidden#161,,
+Sapphire City,0.78,13,40,hidden,Flat Key,126,hidden#53,,underfoot
+Petal Pass,0.96,6,36,hidden,Daisy Flower,126,hidden#76,,underfoot
+Petal Pass,0.96,12,22,hidden,Daisy Flower,126,hidden#75,,underfoot
+Petal Pass,0.96,11,12,hidden,Daisy Flower,126,hidden#74,,underfoot
+Cali,0.117,23,15,hidden,Ether,2,hidden#160,,
+Cali,0.117,32,11,hidden,Super Potion,2,hidden#159,,
+Blackstone Rd.,0.121,32,15,hidden,PP Up,1,hidden#166,,
+Obsidian Path,0.122,4,5,hidden,Black Augurite,2,hidden#163,,
+Obsidian Path,0.122,37,25,hidden,Gengarite,2,hidden#164,,
+Oxide Trail,1.26,29,5,hidden,Rawst Berry,1,hidden#169,,
+Oxide Trail,1.26,45,10,hidden,Blazikenite,1,hidden#170,,
+The Ironair,1.28,52,9,hidden,Metagrossite,1,hidden#172,,
+Indigo Channel,1.29,43,28,hidden,Rare Candy,1,hidden#176,,
+Indigo Channel,1.29,19,26,hidden,Gyaradosite,1,hidden#175,,
+Passwacan,1.39,32,33,hidden,Thunder Stone,1,hidden#184,,
+Bois-Esprit,1.45,41,35,hidden,Whipped Dream,2,hidden#173,,
+Azur Channel,1.48,84,20,hidden,Fresh Water,1,hidden#188,,
+Azur Channel,1.48,79,17,hidden,Rare Bone,1,hidden#189,,
+Azur Channel,1.48,26,18,hidden,Razor Claw,1,hidden#190,,
+Azur Channel,1.48,21,21,hidden,Deep Sea Scale,1,hidden#191,,
+Oparque,1.49,11,15,hidden,Big Pearl,1,hidden#193,,
+Oparque,1.49,26,21,hidden,Reaper Cloth,1,hidden#194,,
+Navy Channel,1.52,55,20,hidden,Poké Doll,1,hidden#197,,
+Navy Channel,1.52,33,13,hidden,Star Piece,1,hidden#198,,
+Navy Channel,1.52,79,12,hidden,Water Gem,1,hidden#199,,
+Herron Prairie,1.54,11,7,hidden,Sitrus Berry,2,hidden#166,,
+Herron Prairie,1.54,16,8,hidden,Lum Berry,2,hidden#167,,
+Herron Prairie,1.54,24,7,hidden,Lansat Berry,2,hidden#168,,
+Beryl Channel,1.72,13,63,hidden,Net Ball,2,hidden#170,,
+Beryl Channel,1.72,24,72,hidden,Deep Sea Tooth,2,hidden#171,,
+Mellow Abysses,1.81,24,9,hidden,Dive Ball,2,hidden#176,,
+Mellow Abysses,1.81,47,38,hidden,Rocky Helmet,2,hidden#177,,
+Mellow Abysses,1.82,34,19,hidden,Rare Candy,2,hidden#178,,
+Mellow Abysses,1.82,24,19,hidden,Nugget,2,hidden#179,,
+The Ironair,1.84,8,23,hidden,Sablenite,1,hidden#174,,
+Challenger Rd.,1.85,6,54,hidden,Medichamite,2,hidden#187,,
+Challenger Rd.,1.86,18,6,hidden,Damp Rock,2,hidden#182,,
+Challenger Rd.,1.90,34,32,hidden,Rare Candy,2,hidden#157,,
+Challenger Rd.,1.91,28,63,hidden,Heat Rock,2,hidden#188,,
+Challenger Rd.,1.91,38,15,hidden,Sacred Ash,2,hidden#191,,
+Challenger Rd.,1.92,24,32,hidden,Dawn Stone,2,hidden#186,,
+Vikkelson,1.120,19,10,hidden,Rare Candy,127,hidden#78,,underfoot
+Navy Channel,24.9,28,6,hidden,Everstone,1,hidden#48,,
+Navy Channel,24.9,15,11,hidden,Everstone,1,hidden#49,,
+PETALBURG WOODS,24.11,39,35,hidden,Potion,1,hidden#58,,
+PETALBURG WOODS,24.11,26,6,hidden,Tiny Mushroom,1,hidden#59,,
+PETALBURG WOODS,24.11,40,29,hidden,Tiny Mushroom,1,hidden#60,,
+PETALBURG WOODS,24.11,4,19,hidden,Poké Ball,1,hidden#61,,
+Beryl Channel,24.13,8,10,hidden,Full Heal,1,hidden#77,,
+Beryl Channel,24.13,7,29,hidden,Great Ball,1,hidden#76,,
+MT. PYRE,24.21,9,8,hidden,Ultra Ball,1,hidden#29,,
+MT. PYRE,24.21,16,22,hidden,Max Ether,1,hidden#78,,
+MT. PYRE,24.22,9,25,hidden,Zinc,1,hidden#79,,
+MT. PYRE,24.22,37,7,hidden,Rare Candy,1,hidden#80,,
+VICTORY ROAD,24.43,30,39,hidden,Ultra Ball,1,hidden#81,,
+VICTORY ROAD,24.45,28,5,hidden,Elixir,1,hidden#82,,
+VICTORY ROAD,24.45,37,1,hidden,Max Repel,1,hidden#83,,
+Rocheval,24.66,42,10,hidden,Key to Room 1,1,hidden#31,,
+Rocheval,24.66,20,5,hidden,Key to Room 2,1,hidden#32,,
+Rocheval,24.66,1,12,hidden,Key to Room 4,1,hidden#33,,
+Rocheval,24.66,1,2,hidden,Key to Room 6,1,hidden#34,,
+Petal Pass,24.99,32,29,hidden,Zinc,1,hidden#102,,
+Petal Pass,24.99,27,8,hidden,Calcium,1,hidden#101,,
+Petal Pass,24.99,7,5,hidden,Protein,1,hidden#103,,
+Petal Pass,24.99,19,43,hidden,Iron,1,hidden#104,,
+MAPSEC_87,25.42,0,2,hidden,Leftovers,1,hidden#35,,
+SAFARI ZONE,26.12,31,35,hidden,Rare Candy,1,hidden#106,,
+SAFARI ZONE,26.12,21,5,hidden,Zinc,1,hidden#107,,
+SAFARI ZONE,26.13,19,36,hidden,PP Up,1,hidden#108,,
+SAFARI ZONE,26.13,32,33,hidden,Full Restore,1,hidden#105,,
+NAVEL ROCK,26.75,12,9,hidden,Sacred Ash,1,hidden#109,,
+Obsidian Path,29.1,4,5,hidden,Nugget,1,hidden#1,,
+Council HQ,14.7,,,found?,HM08,1,,0x82B0E87
+Sapphire City,0.76,,,gift?,TM39,1,,0x8360613
+Sapphire City,0.76,,,gift?,Bottle Cap,1,,0x83607F4
+Sapphire City,0.76,,,gift?,Bottle Cap,1,,0x8360832
+Sapphire City,0.76,,,gift?,Black Glasses,1,,0x83608DC
+Sapphire City,0.76,,,gift?,Rare Candy,1,,0x83608F1
+Sapphire City,0.78,,,gift?,Paralyze Heal,1,,0x836242E
+Petal Pass,0.96,,,gift?,TM19,1,,0x83663AF
+Pkmn League HQ,0.99,,,gift?,Exp. Share,1,,0x83675F2
+Cruzeira,0.102,,,gift?,TM33,1,,0x8368537
+Pastoral Rd.,0.106,,,gift?,Honey,1,,0x836B5A3
+Ohulinn,0.115,,,gift?,TM08,1,,0x836D033
+Cali,0.119,,,gift?,Eka's Scarf,1,,0x836E1FE
+Blackstone Rd.,0.121,,,gift?,TM10,1,,0x836E843
+Obsidian Path,0.122,,,gift?,TM30,1,,0x836EFCA
+Blackstone Rd.,0.123,,,gift?,Reaper Cloth,1,,0x836F657
+Blackstone Rd.,0.123,,,gift?,TM17,1,,0x836F66C
+Glasville,1.9,,,gift?,Dead-Seer,1,,0x837186E
+Vikkelson,1.16,,,gift?,Mega Ring,1,,0x8372E35
+Vikkelson,1.16,,,gift?,Mega Ring,1,,0x8372F6C
+Pebble Cross,1.19,,,gift?,TM49,1,,0x8374895
+Pebble Cross,1.19,,,gift?,TM49,1,,0x837498D
+Pebble Cross,1.19,,,gift?,TM21,1,,0x8374D31
+Oxide Trail,1.26,,,gift?,TM23,1,,0x8377CAB
+The Ironair,1.27,,,gift?,Master Ball,1,,0x8378352
+The Ironair,1.28,,,gift?,TM09,1,,0x8378F9A
+Indigo Channel,1.29,,,gift?,TM22,1,,0x8379952
+Jangala Rd.,1.30,,,gift?,Big Root,1,,0x837A045
+Jangala Rd.,1.30,,,gift?,TM18,1,,0x837A05A
+Jangala Rd.,1.30,,,gift?,PP Up,1,,0x837A06F
+Jangala Rd.,1.30,,,gift?,Full Heal,1,,0x837A084
+Passaqua Wy.,1.37,,,gift?,Carbos,1,,0x837C576
+Passaqua Wy.,1.37,,,gift?,Nest Ball,1,,0x837C58B
+Passaqua Wy.,1.38,,,gift?,TM36,1,,0x837C9EF
+Passwacan,1.39,,,gift?,Acro Bike,1,,0x837CF51
+Passwacan,1.39,,,gift?,Electirizer,1,,0x837D052
+Passwacan,1.44,,,gift?,TM45,1,,0x837E489
+Bois-Esprit,1.45,,,gift?,TM20,1,,0x837EE44
+Azur Channel,1.47,,,gift?,Sea Incense,1,,0x837F8E2
+Azur Channel,1.48,,,gift?,Soft Sand,1,,0x837FEF8
+Azur Channel,1.48,,,gift?,Assault Vest,1,,0x837FF0D
+Oparque,1.49,,,gift?,TM11,1,,0x838048C
+Navy Channel,1.52,,,gift?,Ability Capsule,1,,0x838138E
+Navy Channel,1.52,,,gift?,Blue Flute,1,,0x83813A3
+Xatu's Nest,1.55,,,gift?,TM38,1,,0x8381D51
+Xatu's Nest,1.65,,,gift?,Poké Ball,5,,0x8383156
+Beryl Channel,1.72,,,gift?,TM07,1,,0x8384449
+Virimante,1.75,,,gift?,TM29,1,,0x838579E
+Hydropolis,1.83,,,gift?,Safety Goggles,1,,0x8388003
+Hydropolis,1.83,,,gift?,TM48,1,,0x8388018
+Hydropolis,1.83,,,gift?,TM37,1,,0x8389594
+Challenger Rd.,1.85,,,gift?,Focus Sash,1,,0x838BECD
+Challenger Rd.,1.85,,,gift?,TM25,1,,0x838BEE2
+Challenger Rd.,1.85,,,gift?,TM03,1,,0x838C4B8
+Challenger Rd.,1.89,,,gift?,Magmarizer,1,,0x838C86A
+Challenger Rd.,1.91,,,gift?,TM35,1,,0x838CBB5
+Challenger Rd.,1.91,,,gift?,Leftovers,1,,0x838CBCA
+Challenger Rd.,1.91,,,gift?,Fire Stone,1,,0x838CBDF
+Challenger Rd.,1.92,,,gift?,TM13,1,,0x838CFFC
+Challenger Rd.,1.92,,,gift?,Ice Stone,1,,0x838D011
+Challenger Rd.,1.92,,,gift?,Focus Sash,1,,0x838D0CD
+Challenger Rd.,1.92,,,gift?,Focus Sash,1,,0x838D122
+Sapphire City,1.104,,,gift?,House Key,1,,0x838EF1D
+Jangala Rd.,1.106,,,gift?,Oran Berry,1,,0x838F0EE
+Jangala Rd.,1.106,,,gift?,Energy Root,1,,0x838F137
+Passaqua Wy.,1.37,,,gift?,Escape Rope,1,,0x838F5CC
+Passaqua Wy.,1.37,,,gift?,Dragon Scale,1,,0x838F5E1
+Passaqua Wy.,1.37,,,gift?,Deep Sea Scale,1,,0x838F5F6
+Passaqua Wy.,1.37,,,gift?,Mystic Water,1,,0x838F60B
+Passaqua Wy.,1.37,,,gift?,Shell Bell,1,,0x838F620
+Route 7,1.110,,,gift?,Zinc,1,,0x838FF0C
+Route 7,1.110,,,gift?,Lum Berry,1,,0x838FF21
+Route 7,1.110,,,gift?,PP Max,1,,0x838FF36
+Route 7,1.110,,,gift?,Max Elixir,1,,0x838FF4B
+Route 7,1.116,,,gift?,Tea,1,,0x8390CC3
+Celestial Tower,1.118,,,gift?,Spell Tag,1,,0x8390D76
+Celestial Tower,1.118,,,gift?,Weakness Policy,1,,0x8390D8B
