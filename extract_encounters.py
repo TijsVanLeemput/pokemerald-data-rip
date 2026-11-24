@@ -24,10 +24,67 @@ Notes
 - Maps sharing a region-map name get their map id appended, e.g. "Challenger Rd. (1.85)".
   Maps with several encounter sets (Altering-Cave style) get " [set N]".
 """
-import argparse, csv, os, struct, sys
+import argparse, csv, os, string, struct, sys
 from collections import OrderedDict
 
-ROM_BASE = 0x08000000
+ROM_BASE = 0x08000000          # GBA address the cartridge ROM is mapped at
+ROM_MIRROR_BASE = 0x0A000000   # the same ROM again (wait state 1); some code pointers use this mirror
+
+# GF ROM header / pokeemerald-expansion "RHHEXP" header
+ROM_HEADER_SPECIES_INFO = 0x1BC   # GF ROM header field holding the gSpeciesInfo pointer (expansion)
+RHH_HEADER_SEARCH_END = 0x400     # the "RHHEXP" magic sits within the first 0x400 bytes of the ROM
+RHH_SPECIES_COUNT_OFFSET = 12     # u16 species count, relative to the "RHHEXP" magic
+
+# Sizes of the GBA's basic types
+U8_SIZE, U16_SIZE, U32_SIZE = 1, 2, 4
+POINTER_SIZE = U32_SIZE
+POINTER_ALIGNMENT_MASK = POINTER_SIZE - 1    # pointers to data are 4-byte aligned
+SCAN_END_MARGIN = 64                         # table scans stop this many bytes before the end of the ROM
+
+# struct MapHeader
+MAP_HEADER_SIZE = 0x1C
+MAP_HEADER_LAYOUT, MAP_HEADER_EVENTS, MAP_HEADER_SCRIPTS = 0x00, 0x04, 0x08   # pointer fields
+MAP_HEADER_REGION_MAP_SECTION = 0x14         # offset of regionMapSectionId (MAPSEC_*)
+MIN_MAP_GROUPS = 10                          # gMapGroups must have at least this many groups
+
+# struct RegionMapLocation { u8 x, y, width, height; const u8 *name; }
+REGION_MAP_ENTRY_SIZE = 8
+REGION_MAP_ENTRY_NAME = 4                    # offset of the name pointer
+REGION_MAP_MAX_X, REGION_MAP_MAX_Y = 60, 40  # plausibility bounds for a region map rectangle
+REGION_MAP_MAX_WIDTH, REGION_MAP_MAX_HEIGHT = 40, 40
+MAPSEC_NAME_MIN_LENGTH, MAPSEC_NAME_MAX_LENGTH = 3, 24
+MIN_REGION_MAP_ENTRIES = 40                  # gRegionMapEntries must have at least this many entries
+
+# struct WildPokemonHeader { u8 mapGroup, mapNum; 2 bytes padding; const struct WildPokemonInfo *infos[]; }
+WILD_HEADER_MAP_NUM = 1
+WILD_HEADER_PADDING = 2
+WILD_HEADER_INFOS = 4                        # offset of the first WildPokemonInfo pointer
+MIN_WILD_HEADER_SIZE = 20                    # vanilla: land, water, rock smash and fishing pointers
+MAX_WILD_INFO_SLOTS = 40                     # largest number of pointer slots tried per header
+ENOUGH_FILLED_SLOTS = 20                     # a header table with more filled slots than this is the main one
+MAP_TABLE_END = 0xFF                         # gWildMonHeaders ends with mapGroup = mapNum = 0xFF (MAP_UNDEFINED)
+# struct WildPokemonInfo { u8 encounterRate; 3 bytes padding; const struct WildPokemon *wildPokemon; }
+WILD_INFO_SIZE = 8
+WILD_INFO_PADDING = 1
+WILD_INFO_MONS = 4
+# struct WildPokemon { u8 minLevel, maxLevel; u16 species; }
+WILD_POKEMON_SIZE = 4
+WILD_POKEMON_MAX_LEVEL = 1
+MAX_LEVEL = 100
+MIN_ENCOUNTER_TYPES_PER_TIME = 4             # land, water, rock smash, fishing
+ENCOUNTER_RATE_DECIMALS = 2
+
+# gSpeciesInfo layout search
+SPECIES_NAME_SEARCH_RANGE = 0x200            # SPECIES_NONE's name must start this close to gSpeciesInfo
+MIN_SPECIES_INFO_SIZE, MAX_SPECIES_INFO_SIZE = 0x1C, 0x400
+SPECIES_INFO_CATCH_RATE = 8                  # offset of catchRate in struct SpeciesInfo
+SPECIES_NONE_NAME_LENGTH = 10                # SPECIES_NONE is called "??????????"
+POKEMON_NAME_LENGTH = 12                     # longest species name (pokeemerald-expansion)
+SPECIES_LAYOUT_SAMPLE = 40                   # species 1..39 must all have clean names for a struct size to be accepted
+LAYOUT_CHECK_MIN_NAME_LENGTH = 3             # names checked while guessing a struct layout are at least this long
+MIN_SPECIES_NAME_LENGTH = 2
+DEFAULT_TEXT_READ_LENGTH = 40               # Rom.text: bytes read when no length is given
+DEFAULT_CLEAN_TEXT_LENGTH = 20              # Rom.is_clean_text: longest string accepted by default
 
 # ---------------------------------------------------------------- slot odds --
 SLOT_RATES = {
@@ -40,294 +97,315 @@ SLOT_RATES = {
 FISHING_RODS = [("oldRod", 0, 2), ("goodRod", 2, 5), ("superRod", 5, 10)]
 TYPE_ORDER = ["land", "water", "rockSmash", "fishing", "hidden", "extra"]
 TOD_LABELS = ["morning", "day", "evening", "night"]
+TIMES_OF_DAY = len(TOD_LABELS)
 
 # ------------------------------------------------------------------ charmap --
+# Control bytes of the game's text encoding (pokeemerald charmap.txt)
+CHAR_DIGIT_0, CHAR_UPPER_A, CHAR_LOWER_A = 0xA1, 0xBB, 0xD5   # start of 0-9, A-Z, a-z
+CHAR_QUESTION_MARK = 0xAC
+CHAR_PROMPT_SCROLL = 0xFA      # \l  scroll the text box up one line
+CHAR_PROMPT_CLEAR = 0xFB       # \p  wait for A, then start a new box
+EXT_CTRL_CODE_BEGIN = 0xFC     # followed by a control-code id (colour, pause, sound, ...) and its arguments
+PLACEHOLDER_BEGIN = 0xFD       # followed by a placeholder id ({PLAYER}, {STR_VAR_1}, ...)
+CHAR_NEWLINE = 0xFE            # \n
+TEXT_END = 0xFF                # EOS: end of string
+CONTROL_SEQUENCE_LENGTH = 2    # EXT_CTRL_CODE_BEGIN / PLACEHOLDER_BEGIN byte + the id that follows it
+
 CHARMAP = {0x00: " ", 0x1B: "é", 0x2D: "&", 0x53: "PK", 0x54: "MN", 0x5A: "Í",
            0xAB: "!", 0xAC: "?", 0xAD: ".", 0xAE: "-", 0xB0: "…", 0xB1: '"',
            0xB2: '"', 0xB3: "'", 0xB4: "'", 0xB5: "♂", 0xB6: "♀", 0xB8: ",",
            0xBA: "/", 0xF0: ":", 0xFE: " "}
-for i in range(10): CHARMAP[0xA1 + i] = chr(48 + i)
-for i in range(26):
-    CHARMAP[0xBB + i] = chr(65 + i)
-    CHARMAP[0xD5 + i] = chr(97 + i)
+for i, char in enumerate(string.digits): CHARMAP[CHAR_DIGIT_0 + i] = char
+for i, char in enumerate(string.ascii_uppercase): CHARMAP[CHAR_UPPER_A + i] = char
+for i, char in enumerate(string.ascii_lowercase): CHARMAP[CHAR_LOWER_A + i] = char
 
 
 class Rom:
     def __init__(self, path):
-        with open(path, "rb") as f:
-            self.d = f.read()
-        self.L = len(self.d)
+        with open(path, "rb") as rom_file:
+            self.data = rom_file.read()
+        self.size = len(self.data)
 
-    def u8(self, o): return self.d[o]
-    def u16(self, o): return struct.unpack_from("<H", self.d, o)[0]
-    def u32(self, o): return struct.unpack_from("<I", self.d, o)[0]
-    def isptr(self, p): return ROM_BASE <= p < ROM_BASE + self.L
-    def off(self, p): return p - ROM_BASE
+    def u8(self, offset): return self.data[offset]
+    def u16(self, offset): return struct.unpack_from("<H", self.data, offset)[0]
+    def u32(self, offset): return struct.unpack_from("<I", self.data, offset)[0]
+    def isptr(self, pointer): return ROM_BASE <= pointer < ROM_BASE + self.size
+    def off(self, pointer): return pointer - ROM_BASE
 
-    def text(self, o, maxlen=40):
-        out, d, i = [], self.d, o
-        while i < o + maxlen and i < self.L:
-            c = d[i]
-            if c == 0xFF: break
-            if c in (0xFC, 0xFD): i += 2; continue
-            out.append(CHARMAP.get(c, ""))
+    def text(self, offset, maxlen=DEFAULT_TEXT_READ_LENGTH):
+        out, data, i = [], self.data, offset
+        while i < offset + maxlen and i < self.size:
+            char_code = data[i]
+            if char_code == TEXT_END: break
+            if char_code in (EXT_CTRL_CODE_BEGIN, PLACEHOLDER_BEGIN): i += CONTROL_SEQUENCE_LENGTH; continue
+            out.append(CHARMAP.get(char_code, ""))
             i += 1
         return "".join(out).strip()
 
-    def is_clean_text(self, o, minlen=2, maxlen=20):
-        seg = self.d[o:o + maxlen + 1]
-        if 0xFF not in seg: return False
-        seg = seg[:seg.index(0xFF)]
-        return len(seg) >= minlen and all(c in CHARMAP for c in seg)
+    def is_clean_text(self, offset, minlen=MIN_SPECIES_NAME_LENGTH, maxlen=DEFAULT_CLEAN_TEXT_LENGTH):
+        seg = self.data[offset:offset + maxlen + 1]
+        if TEXT_END not in seg: return False
+        seg = seg[:seg.index(TEXT_END)]
+        return len(seg) >= minlen and all(char_code in CHARMAP for char_code in seg)
 
 
 # ----------------------------------------------------------------- species --
 def find_species(rom, forced_base=None):
     """Returns (base, stride, nameOffset, catchRateOffset, count)."""
-    d = rom.d
+    data = rom.data
     count = None
-    rhh = d.find(b"RHHEXP")
-    if 0 <= rhh < 0x400:
-        count = rom.u16(rhh + 12)
+    rhh = data.find(b"RHHEXP")
+    if 0 <= rhh < RHH_HEADER_SEARCH_END:
+        count = rom.u16(rhh + RHH_SPECIES_COUNT_OFFSET)
     if forced_base is not None:
         base = forced_base
     else:
-        base = rom.off(rom.u32(0x1BC))  # GF ROM header -> gSpeciesInfo (expansion)
+        base = rom.off(rom.u32(ROM_HEADER_SPECIES_INFO))
     # name of SPECIES_NONE is "??????????"
-    qm = bytes([0xAC] * 10 + [0xFF])
-    noff = d.find(qm, base, base + 0x200)
+    none_name_bytes = bytes([CHAR_QUESTION_MARK] * SPECIES_NONE_NAME_LENGTH + [TEXT_END])
+    noff = data.find(none_name_bytes, base, base + SPECIES_NAME_SEARCH_RANGE)
     if noff < 0:
         raise SystemExit("Could not find species names in gSpeciesInfo at 0x%X "
                          "(vanilla-layout ROMs need --species-info)" % base)
     noff -= base
-    for stride in range(0x1C, 0x400, 4):
-        if all(rom.is_clean_text(base + stride * i + noff, 3, 12) for i in range(1, 40)):
+    for stride in range(MIN_SPECIES_INFO_SIZE, MAX_SPECIES_INFO_SIZE, POINTER_SIZE):
+        if all(rom.is_clean_text(base + stride * i + noff, LAYOUT_CHECK_MIN_NAME_LENGTH, POKEMON_NAME_LENGTH)
+               for i in range(1, SPECIES_LAYOUT_SAMPLE)):
             break
     else:
         raise SystemExit("Could not determine SpeciesInfo struct size")
     if count is None:
         count = 1
-        while rom.is_clean_text(base + stride * count + noff, 2, 12): count += 1
-    return base, stride, noff, 8, count
+        while rom.is_clean_text(base + stride * count + noff, MIN_SPECIES_NAME_LENGTH, POKEMON_NAME_LENGTH): count += 1
+    return base, stride, noff, SPECIES_INFO_CATCH_RATE, count
 
 
 # ------------------------------------------------------------- map metadata --
 def find_map_groups(rom):
-    d, L = rom.d, rom.L
-    def is_mh(p):
-        if not rom.isptr(p) or p & 3: return False
-        o = rom.off(p)
-        if o + 0x1C > L: return False
-        a, b, c, e = struct.unpack_from("<4I", d, o)
-        return rom.isptr(a) and rom.isptr(b) and rom.isptr(c) and (e == 0 or rom.isptr(e))
-    def is_group(p):
-        if not rom.isptr(p) or p & 3: return False
-        o = rom.off(p)
-        return o + 4 <= L and is_mh(rom.u32(o))
-    for o in range(0, L - 64, 4):
-        p = rom.u32(o)
-        if not (ROM_BASE <= p < ROM_BASE + L): continue
-        n = 0
-        while is_group(rom.u32(o + 4 * n)): n += 1
-        if n >= 10: return o, n
+    data, rom_size = rom.data, rom.size
+    def is_mh(pointer):
+        if not rom.isptr(pointer) or pointer & POINTER_ALIGNMENT_MASK: return False
+        offset = rom.off(pointer)
+        if offset + MAP_HEADER_SIZE > rom_size: return False
+        layout_pointer, events_pointer, scripts_pointer, connections_pointer = struct.unpack_from("<4I", data, offset)
+        return (rom.isptr(layout_pointer) and rom.isptr(events_pointer) and rom.isptr(scripts_pointer)
+                and (connections_pointer == 0 or rom.isptr(connections_pointer)))
+    def is_group(pointer):
+        if not rom.isptr(pointer) or pointer & POINTER_ALIGNMENT_MASK: return False
+        offset = rom.off(pointer)
+        return offset + POINTER_SIZE <= rom_size and is_mh(rom.u32(offset))
+    for offset in range(0, rom_size - SCAN_END_MARGIN, POINTER_SIZE):
+        pointer = rom.u32(offset)
+        if not (ROM_BASE <= pointer < ROM_BASE + rom_size): continue
+        group_count = 0
+        while is_group(rom.u32(offset + POINTER_SIZE * group_count)): group_count += 1
+        if group_count >= MIN_MAP_GROUPS: return offset, group_count
     return None, 0
 
 
 def find_region_map_entries(rom):
-    d = rom.d
-    def ok(o):
-        x, y, w, h = d[o:o + 4]
-        p = rom.u32(o + 4)
-        if not rom.isptr(p) or not (0 < w <= 40 and 0 < h <= 40 and x <= 60 and y <= 40):
+    data = rom.data
+    def is_entry(offset):
+        x, y, width, height = data[offset:offset + REGION_MAP_ENTRY_NAME]
+        name_pointer = rom.u32(offset + REGION_MAP_ENTRY_NAME)
+        if not rom.isptr(name_pointer) or not (0 < width <= REGION_MAP_MAX_WIDTH and 0 < height <= REGION_MAP_MAX_HEIGHT
+                                               and x <= REGION_MAP_MAX_X and y <= REGION_MAP_MAX_Y):
             return False
-        return rom.is_clean_text(rom.off(p), 3, 24)
-    for o in range(0, rom.L - 8, 4):
-        if not rom.isptr(rom.u32(o + 4)): continue
-        n = 0
-        while ok(o + 8 * n): n += 1
-        if n >= 40: return o
+        return rom.is_clean_text(rom.off(name_pointer), MAPSEC_NAME_MIN_LENGTH, MAPSEC_NAME_MAX_LENGTH)
+    for offset in range(0, rom.size - REGION_MAP_ENTRY_SIZE, POINTER_SIZE):
+        if not rom.isptr(rom.u32(offset + REGION_MAP_ENTRY_NAME)): continue
+        entry_count = 0
+        while is_entry(offset + REGION_MAP_ENTRY_SIZE * entry_count): entry_count += 1
+        if entry_count >= MIN_REGION_MAP_ENTRIES: return offset
     return None
 
 
 def mapsec_names(rom, entries):
     names, k = [], 0
     while True:
-        p = rom.u32(entries + 8 * k + 4)
-        if not rom.isptr(p): break
-        names.append(rom.text(rom.off(p)))
+        name_pointer = rom.u32(entries + REGION_MAP_ENTRY_SIZE * k + REGION_MAP_ENTRY_NAME)
+        if not rom.isptr(name_pointer): break
+        names.append(rom.text(rom.off(name_pointer)))
         k += 1
     return names
 
 
 # ---------------------------------------------------------- wild headers --
-def info_ok(rom, p):
-    if not rom.isptr(p) or p & 3: return False
-    o = rom.off(p)
-    if o + 8 > rom.L or rom.d[o + 1:o + 4] != b"\0\0\0": return False
-    mp = rom.u32(o + 4)
-    if not rom.isptr(mp): return False
-    mo = rom.off(mp)
-    lo, hi = rom.d[mo], rom.d[mo + 1]
-    return 1 <= lo <= 100 and 1 <= hi <= 100
+def info_ok(rom, pointer):
+    if not rom.isptr(pointer) or pointer & POINTER_ALIGNMENT_MASK: return False
+    offset = rom.off(pointer)
+    if offset + WILD_INFO_SIZE > rom.size or any(rom.data[offset + WILD_INFO_PADDING:offset + WILD_INFO_MONS]): return False
+    mons_pointer = rom.u32(offset + WILD_INFO_MONS)
+    if not rom.isptr(mons_pointer): return False
+    mons_offset = rom.off(mons_pointer)
+    min_level, max_level = rom.data[mons_offset], rom.data[mons_offset + WILD_POKEMON_MAX_LEVEL]
+    return 1 <= min_level <= MAX_LEVEL and 1 <= max_level <= MAX_LEVEL
 
 
 def find_wild_headers(rom):
     """Find all header tables (main + frontier ones); return (start, stride, count) of the
     table with the most encounter data."""
-    d = rom.d
-    cands = [o for o in range(0, rom.L - 4, 4)
-             if ROM_BASE <= rom.u32(o) < ROM_BASE + rom.L and info_ok(rom, rom.u32(o))]
-    best = None
+    data = rom.data
+    cands = [offset for offset in range(0, rom.size - POINTER_SIZE, POINTER_SIZE)
+             if ROM_BASE <= rom.u32(offset) < ROM_BASE + rom.size and info_ok(rom, rom.u32(offset))]
+    best = None   # (start, stride, header_count)
+    best_stride, best_filled = 0, 0
     tried = set()
-    for c in cands:
-        for stride in range(20, 4 + 4 * 40 + 1, 4):
-            for slot in range((stride - 4) // 4):
-                h = c - 4 - 4 * slot
-                if (h, stride) in tried: continue
-                res = walk_table(rom, h, stride)
+    max_stride = WILD_HEADER_INFOS + POINTER_SIZE * MAX_WILD_INFO_SLOTS
+    for candidate in cands:
+        for stride in range(MIN_WILD_HEADER_SIZE, max_stride + 1, POINTER_SIZE):
+            for slot in range((stride - WILD_HEADER_INFOS) // POINTER_SIZE):
+                header_offset = candidate - WILD_HEADER_INFOS - POINTER_SIZE * slot
+                if (header_offset, stride) in tried: continue
+                res = walk_table(rom, header_offset, stride)
                 if res is None: continue
-                start, n, filled = res
+                start, header_count, filled = res
                 tried.add((start, stride))
                 # most data wins; on ties prefer the larger stride (a smaller stride
                 # that divides the real one also walks the table, but mis-aligned)
-                if best is None or (filled, stride) > (best[3], best[1]):
-                    best = (start, stride, n, filled)
-        if best and best[3] > 20:
+                if best is None or (filled, stride) > (best_filled, best_stride):
+                    best = (start, stride, header_count)
+                    best_stride, best_filled = stride, filled
+        if best and best_filled > ENOUGH_FILLED_SLOTS:
             # good enough once we have a big table; verify a couple more strides only
             break
     if not best:
         raise SystemExit("No wild encounter header table found")
-    return best[:3]
+    return best
 
 
-def walk_table(rom, h, stride):
-    d, np_ = rom.d, (stride - 4) // 4
-    def valid(o):
-        if o < 0 or o + stride > rom.L or d[o + 2:o + 4] != b"\0\0": return False
-        ps = struct.unpack_from("<%dI" % np_, d, o + 4)
-        return all(p == 0 or info_ok(rom, p) for p in ps)
-    def is_end(o): return d[o] == 0xFF and d[o + 1] == 0xFF
-    if not valid(h): return None
-    start = h
+def walk_table(rom, header_offset, stride):
+    data, pointer_slots = rom.data, (stride - WILD_HEADER_INFOS) // POINTER_SIZE
+    def valid(offset):
+        if offset < 0 or offset + stride > rom.size or any(data[offset + WILD_HEADER_PADDING:offset + WILD_HEADER_INFOS]):
+            return False
+        pointers = struct.unpack_from("<%dI" % pointer_slots, data, offset + WILD_HEADER_INFOS)
+        return all(pointer == 0 or info_ok(rom, pointer) for pointer in pointers)
+    def is_end(offset): return data[offset] == MAP_TABLE_END and data[offset + WILD_HEADER_MAP_NUM] == MAP_TABLE_END
+    if not valid(header_offset): return None
+    start = header_offset
     while valid(start - stride) and not is_end(start - stride): start -= stride
-    o, n, filled = start, 0, 0
-    while not is_end(o):
-        if not valid(o): return None
-        filled += sum(1 for p in struct.unpack_from("<%dI" % np_, d, o + 4) if p)
-        n += 1; o += stride
-    return start, n, filled
+    offset, header_count, filled = start, 0, 0
+    while not is_end(offset):
+        if not valid(offset): return None
+        filled += sum(1 for pointer in struct.unpack_from("<%dI" % pointer_slots, data, offset + WILD_HEADER_INFOS) if pointer)
+        header_count += 1; offset += stride
+    return start, header_count, filled
 
 
 # ------------------------------------------------------------------- main --
 def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     here = os.path.dirname(os.path.abspath(__file__))
-    ap.add_argument("rom", nargs="?", default=os.path.join(here, "input", "game.gba"))
-    ap.add_argument("-o", "--output", default=os.path.join(here, "output", "encounters.csv"))
-    ap.add_argument("--wild-headers", type=lambda s: int(s, 0), help="ROM offset of gWildMonHeaders")
-    ap.add_argument("--header-size", type=lambda s: int(s, 0), help="sizeof(WildPokemonHeader)")
-    ap.add_argument("--species-info", type=lambda s: int(s, 0), help="ROM offset of gSpeciesInfo")
-    ap.add_argument("--map-groups", type=lambda s: int(s, 0), help="ROM offset of gMapGroups")
-    ap.add_argument("--region-map-entries", type=lambda s: int(s, 0), help="ROM offset of gRegionMapEntries")
-    ap.add_argument("--types-per-time", type=int, help="pointer slots per time-of-day block")
-    ap.add_argument("--per-slot", action="store_true", help="one row per slot instead of summing per species")
-    a = ap.parse_args()
+    parser.add_argument("rom", nargs="?", default=os.path.join(here, "input", "game.gba"))
+    parser.add_argument("-o", "--output", default=os.path.join(here, "output", "encounters.csv"))
+    parser.add_argument("--wild-headers", type=lambda text: int(text, 0), help="ROM offset of gWildMonHeaders")
+    parser.add_argument("--header-size", type=lambda text: int(text, 0), help="sizeof(WildPokemonHeader)")
+    parser.add_argument("--species-info", type=lambda text: int(text, 0), help="ROM offset of gSpeciesInfo")
+    parser.add_argument("--map-groups", type=lambda text: int(text, 0), help="ROM offset of gMapGroups")
+    parser.add_argument("--region-map-entries", type=lambda text: int(text, 0), help="ROM offset of gRegionMapEntries")
+    parser.add_argument("--types-per-time", type=int, help="pointer slots per time-of-day block")
+    parser.add_argument("--per-slot", action="store_true", help="one row per slot instead of summing per species")
+    args = parser.parse_args()
 
-    rom = Rom(a.rom)
-    log = lambda *x: print(*x, file=sys.stderr)
+    rom = Rom(args.rom)
+    log = lambda *parts: print(*parts, file=sys.stderr)
 
-    sp_base, sp_stride, sp_name, sp_catch, sp_count = find_species(rom, a.species_info)
+    sp_base, sp_stride, sp_name, sp_catch, sp_count = find_species(rom, args.species_info)
     log("gSpeciesInfo      @ 0x%X  (%d species, %d bytes each)" % (sp_base, sp_count, sp_stride))
-    def species(s):
-        if s >= sp_count: return ("SPECIES_%d" % s, "")
-        o = sp_base + s * sp_stride
-        return rom.text(o + sp_name, 13), rom.d[o + sp_catch]
+    def species(species_id):
+        if species_id >= sp_count: return ("SPECIES_%d" % species_id, "")
+        offset = sp_base + species_id * sp_stride
+        return rom.text(offset + sp_name, POKEMON_NAME_LENGTH + 1), rom.data[offset + sp_catch]
 
-    if a.wild_headers is not None:
-        hs = a.header_size or 20
-        _, n, _ = walk_table(rom, a.wild_headers, hs) or (0, 0, 0)
-        wh, hcount = a.wild_headers, n
+    if args.wild_headers is not None:
+        header_size = args.header_size or MIN_WILD_HEADER_SIZE
+        _, table_length, _ = walk_table(rom, args.wild_headers, header_size) or (0, 0, 0)
+        wild_headers, hcount = args.wild_headers, table_length
     else:
-        wh, hs, hcount = find_wild_headers(rom)
-    np_ = (hs - 4) // 4
-    log("gWildMonHeaders   @ 0x%X  (%d headers, %d bytes each, %d pointer slots)" % (wh, hcount, hs, np_))
+        wild_headers, header_size, hcount = find_wild_headers(rom)
+    pointer_slots = (header_size - WILD_HEADER_INFOS) // POINTER_SIZE
+    log("gWildMonHeaders   @ 0x%X  (%d headers, %d bytes each, %d pointer slots)" % (wild_headers, hcount, header_size, pointer_slots))
 
-    per = a.types_per_time or (np_ // 4 if np_ >= 16 and np_ % 4 == 0 else np_)
-    n_tod = max(1, np_ // per)
+    # expansion: one block of encounter-type slots per time of day
+    one_block_per_time = pointer_slots >= TIMES_OF_DAY * MIN_ENCOUNTER_TYPES_PER_TIME and pointer_slots % TIMES_OF_DAY == 0
+    per = args.types_per_time or (pointer_slots // TIMES_OF_DAY if one_block_per_time else pointer_slots)
+    n_tod = max(1, pointer_slots // per)
 
-    mg = a.map_groups
-    if mg is None: mg, _ = find_map_groups(rom)
-    rme = a.region_map_entries if a.region_map_entries is not None else find_region_map_entries(rom)
+    map_groups = args.map_groups
+    if map_groups is None: map_groups, _ = find_map_groups(rom)
+    rme = args.region_map_entries if args.region_map_entries is not None else find_region_map_entries(rom)
     names = mapsec_names(rom, rme) if rme is not None else []
-    log("gMapGroups        @ %s" % (hex(mg) if mg is not None else "not found"))
+    log("gMapGroups        @ %s" % (hex(map_groups) if map_groups is not None else "not found"))
     log("gRegionMapEntries @ %s  (%d names)" % (hex(rme) if rme is not None else "not found", len(names)))
 
-    def map_name(g, n):
-        if mg is None: return "MAP_%d_%d" % (g, n)
+    def map_name(map_group, map_num):
+        if map_groups is None: return "MAP_%d_%d" % (map_group, map_num)
         try:
-            gp = rom.off(rom.u32(mg + 4 * g))
-            mh = rom.off(rom.u32(gp + 4 * n))
-            sec = rom.d[mh + 0x14]
+            group_offset = rom.off(rom.u32(map_groups + POINTER_SIZE * map_group))
+            map_header = rom.off(rom.u32(group_offset + POINTER_SIZE * map_num))
+            sec = rom.data[map_header + MAP_HEADER_REGION_MAP_SECTION]
             return names[sec] if sec < len(names) and names[sec] else "MAPSEC_%d" % sec
         except Exception:
-            return "MAP_%d_%d" % (g, n)
+            return "MAP_%d_%d" % (map_group, map_num)
 
     # gather headers
     headers = []
     for i in range(hcount):
-        o = wh + i * hs
-        ps = struct.unpack_from("<%dI" % np_, rom.d, o + 4)
-        if any(ps): headers.append((rom.d[o], rom.d[o + 1], ps))
+        header_offset = wild_headers + i * header_size
+        info_pointers = struct.unpack_from("<%dI" % pointer_slots, rom.data, header_offset + WILD_HEADER_INFOS)
+        if any(info_pointers):
+            headers.append((rom.data[header_offset], rom.data[header_offset + WILD_HEADER_MAP_NUM], info_pointers))
 
     # route labels: disambiguate shared mapsec names and repeated maps
-    base_name = {(g, n): map_name(g, n) for g, n, _ in headers}
+    base_name = {(map_group, map_num): map_name(map_group, map_num) for map_group, map_num, _ in headers}
     maps_per_name = {}
-    for k, v in base_name.items(): maps_per_name.setdefault(v, set()).add(k)
+    for map_key, base_label in base_name.items(): maps_per_name.setdefault(base_label, set()).add(map_key)
     occurrences = {}
-    for g, n, _ in headers: occurrences[(g, n)] = occurrences.get((g, n), 0) + 1
+    for map_group, map_num, _ in headers: occurrences[(map_group, map_num)] = occurrences.get((map_group, map_num), 0) + 1
     seen = {}
 
     rows = []
-    for g, n, ps in headers:
-        label = base_name[(g, n)]
-        if len(maps_per_name[label]) > 1: label += " (%d.%d)" % (g, n)
-        if occurrences[(g, n)] > 1:
-            seen[(g, n)] = seen.get((g, n), 0) + 1
-            label += " [set %d]" % seen[(g, n)]
-        used_tods = {t for t in range(n_tod) if any(ps[t * per:(t + 1) * per])}
-        for t in range(n_tod):
-            if t not in used_tods: continue
-            tod = "any" if used_tods == {0} else (TOD_LABELS[t] if t < len(TOD_LABELS) else "tod%d" % t)
+    for map_group, map_num, info_pointers in headers:
+        label = base_name[(map_group, map_num)]
+        if len(maps_per_name[label]) > 1: label += " (%d.%d)" % (map_group, map_num)
+        if occurrences[(map_group, map_num)] > 1:
+            seen[(map_group, map_num)] = seen.get((map_group, map_num), 0) + 1
+            label += " [set %d]" % seen[(map_group, map_num)]
+        used_tods = {time_of_day for time_of_day in range(n_tod) if any(info_pointers[time_of_day * per:(time_of_day + 1) * per])}
+        for time_of_day in range(n_tod):
+            if time_of_day not in used_tods: continue
+            tod = "any" if used_tods == {0} else (TOD_LABELS[time_of_day] if time_of_day < len(TOD_LABELS) else "tod%d" % time_of_day)
             for k in range(per):
-                p = ps[t * per + k]
-                if not p: continue
+                info_pointer = info_pointers[time_of_day * per + k]
+                if not info_pointer: continue
                 etype = TYPE_ORDER[k] if k < len(TYPE_ORDER) else "type%d" % k
                 rates = SLOT_RATES.get(etype)
                 if rates is None:
                     log("warning: unknown encounter slot %d on %s, skipped" % (k, label)); continue
-                mons_ptr = rom.off(rom.u32(rom.off(p) + 4))
-                slots = [struct.unpack_from("<BBH", rom.d, mons_ptr + 4 * s) for s in range(len(rates))]
+                mons_ptr = rom.off(rom.u32(rom.off(info_pointer) + WILD_INFO_MONS))
+                slots = [struct.unpack_from("<BBH", rom.data, mons_ptr + WILD_POKEMON_SIZE * slot) for slot in range(len(rates))]
                 groups = [(etype, 0, len(rates))] if etype != "fishing" else FISHING_RODS
-                for gname, a0, a1 in groups:
+                for gname, first_slot, end_slot in groups:
                     agg = OrderedDict()
-                    for s in range(a0, a1):
-                        lo, hi, spc = slots[s]
-                        r = rates[s]
-                        key = (spc, s) if a.per_slot else spc
-                        agg[key] = agg.get(key, 0) + r
-                    total = sum(rates[a0:a1])
-                    for key, r in agg.items():
-                        spc = key[0] if a.per_slot else key
-                        nm, cr = species(spc)
-                        pct = round(100.0 * r / total, 2)
-                        rows.append([label, gname, tod, nm, ("%g" % pct), cr])
+                    for slot in range(first_slot, end_slot):
+                        min_level, max_level, spc = slots[slot]
+                        rate = rates[slot]
+                        key = (spc, slot) if args.per_slot else spc
+                        agg[key] = agg.get(key, 0) + rate
+                    total = sum(rates[first_slot:end_slot])
+                    for key, rate in agg.items():
+                        spc = key[0] if args.per_slot else key
+                        pokemon_name, catch_rate = species(spc)
+                        pct = round(100.0 * rate / total, ENCOUNTER_RATE_DECIMALS)
+                        rows.append([label, gname, tod, pokemon_name, ("%g" % pct), catch_rate])
 
-    os.makedirs(os.path.dirname(os.path.abspath(a.output)), exist_ok=True)
-    with open(a.output, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["route", "encounterType", "day/night", "pokemonName", "encounterRate", "catchRate"])
-        w.writerows(rows)
-    log("wrote %d rows -> %s" % (len(rows), a.output))
+    os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
+    with open(args.output, "w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(["route", "encounterType", "day/night", "pokemonName", "encounterRate", "catchRate"])
+        writer.writerows(rows)
+    log("wrote %d rows -> %s" % (len(rows), args.output))
 
 
 if __name__ == "__main__":

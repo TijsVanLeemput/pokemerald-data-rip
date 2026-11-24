@@ -21,29 +21,62 @@ The quest table is found by scanning the ROM for an array of
 Needs extract_encounters.py and extract_items.py in the same folder.
 """
 import argparse, csv, os, re, struct, sys, bisect
-from collections import Counter, OrderedDict, defaultdict
+from collections import Counter, OrderedDict, defaultdict, namedtuple
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from extract_encounters import (Rom, ROM_BASE, CHARMAP, find_species, find_map_groups,
-                                find_region_map_entries, mapsec_names)
-from extract_items import find_items, iter_maps, collect_entries, Walker, learn_native_args
+from extract_encounters import (Rom, ROM_BASE, CHARMAP, TEXT_END, CHAR_NEWLINE, CHAR_PROMPT_SCROLL, CHAR_PROMPT_CLEAR,
+                                EXT_CTRL_CODE_BEGIN, PLACEHOLDER_BEGIN, CONTROL_SEQUENCE_LENGTH,
+                                MAP_HEADER_REGION_MAP_SECTION, POINTER_SIZE, POKEMON_NAME_LENGTH,
+                                find_species, find_map_groups, find_region_map_entries, mapsec_names)
+from extract_items import (ScriptCmd, CMD_LEN, MAX_SCRIPT_DISTANCE, command_args, find_items, iter_maps,
+                           collect_entries, Walker, learn_native_args)
 
+# struct SideQuest { const u8 *name, *desc, *donedesc, *map; u16 sprite; u8 spritetype;
+#                    const struct SubQuest *subquests; u8 numSubquests; }
 SIDE_QUEST_SIZE = 28
+SIDE_QUEST_NAME, SIDE_QUEST_DESCRIPTION, SIDE_QUEST_DONE_DESCRIPTION, SIDE_QUEST_MAP = 0, 4, 8, 12
+SIDE_QUEST_SPRITE, SIDE_QUEST_SPRITE_TYPE = 16, 18
+SIDE_QUEST_SUBQUESTS, SIDE_QUEST_SUBQUEST_COUNT = 20, 24
+SIDE_QUEST_TEXT_FIELDS = (SIDE_QUEST_NAME, SIDE_QUEST_DESCRIPTION, SIDE_QUEST_DONE_DESCRIPTION, SIDE_QUEST_MAP)
+# struct SubQuest { u8 id; const u8 *name, *desc, *map; u16 sprite; u8 spritetype; const u8 *type; }
 SUB_QUEST_SIZE = 24
-SPRITE_TYPES = {1: "object", 2: "item", 3: "pokemon"}
+SUB_QUEST_ID, SUB_QUEST_NAME, SUB_QUEST_DESCRIPTION, SUB_QUEST_MAP = 0, 4, 8, 12
+SUB_QUEST_SPRITE, SUB_QUEST_SPRITE_TYPE, SUB_QUEST_LABEL = 16, 18, 20
+MAX_SUBQUESTS = 100                       # sanity bound while scanning for the quest table
+QUEST_MAP_NAME_MIN_LENGTH, QUEST_MAP_NAME_MAX_LENGTH = 2, 30
+MAX_QUEST_TEXT_LENGTH = 400               # quest texts must end within this many bytes
+MAX_TEXT_LENGTH = 600                     # default read limit for decode()
+
+SPRITE_TYPE_OBJECT, SPRITE_TYPE_ITEM, SPRITE_TYPE_POKEMON = 1, 2, 3
+SPRITE_TYPES = {SPRITE_TYPE_OBJECT: "object", SPRITE_TYPE_ITEM: "item", SPRITE_TYPE_POKEMON: "pokemon"}
 
 # questmenu <case>, <questId>  (include/constants/quests.h)
+(QUEST_CASE_OPEN_MENU, QUEST_CASE_UNLOCK, QUEST_CASE_START, QUEST_CASE_REWARD, QUEST_CASE_COMPLETE,
+ QUEST_CASE_CHECK_UNLOCKED, QUEST_CASE_CHECK_INACTIVE, QUEST_CASE_CHECK_ACTIVE, QUEST_CASE_CHECK_REWARD,
+ QUEST_CASE_CHECK_COMPLETE, QUEST_CASE_BUFFER_NAME) = range(11)
 QUEST_CASES = {
-    0: "openMenu", 1: "unlock", 2: "start", 3: "reward", 4: "complete",
-    5: "checkUnlocked", 6: "checkInactive", 7: "checkActive", 8: "checkReward",
-    9: "checkComplete", 10: "bufferName",
+    QUEST_CASE_OPEN_MENU: "openMenu", QUEST_CASE_UNLOCK: "unlock", QUEST_CASE_START: "start",
+    QUEST_CASE_REWARD: "reward", QUEST_CASE_COMPLETE: "complete",
+    QUEST_CASE_CHECK_UNLOCKED: "checkUnlocked", QUEST_CASE_CHECK_INACTIVE: "checkInactive",
+    QUEST_CASE_CHECK_ACTIVE: "checkActive", QUEST_CASE_CHECK_REWARD: "checkReward",
+    QUEST_CASE_CHECK_COMPLETE: "checkComplete", QUEST_CASE_BUFFER_NAME: "bufferName",
 }
-QUESTMENU_OPCODE_DEFAULT = 0xE7
-# startquest / completequest macro: closemessage; delay 30; questmenu X, q; questmenu 10, q
-MACRO_RE = re.compile(rb"\x68\x28\x1e\x00(.)([\x02\x04])(.)\1\x0a\3", re.S)
+ACTION_ORDER = {action: rank for rank, action in enumerate(QUEST_CASES.values())}
+QUESTMENU_OPCODE_DEFAULT = ScriptCmd.QUESTMENU
+# startquest / completequest macro: closemessage; delay 30; questmenu START or COMPLETE, q; questmenu BUFFER_NAME, q
+MACRO_DELAY_FRAMES = 30
+MACRO_RE = re.compile(
+    re.escape(struct.pack("<BBH", ScriptCmd.CLOSEMESSAGE, ScriptCmd.DELAY, MACRO_DELAY_FRAMES))
+    + b"(?P<opcode>.)(?P<case>[" + re.escape(bytes([QUEST_CASE_START, QUEST_CASE_COMPLETE])) + b"])(?P<quest>.)"
+    + b"(?P=opcode)" + re.escape(bytes([QUEST_CASE_BUFFER_NAME])) + b"(?P=quest)", re.S)
+MACRO_QUESTMENU_AT = CMD_LEN[ScriptCmd.CLOSEMESSAGE] + CMD_LEN[ScriptCmd.DELAY]   # the first questmenu in the macro
+
+QuestEvent = namedtuple("QuestEvent", "quest_number quest_name action route map_id x y event_kind script_address")
+QUEST_EVENT_COLUMNS = ["questNumber", "questName", "action", "route", "mapId", "x", "y", "eventKind", "scriptAddress"]
 
 # expansion object-event pokemon sprites: OBJ_EVENT_MON | species (+ shiny/female bits)
 OBJ_EVENT_MON, OBJ_EVENT_MON_SHINY, OBJ_EVENT_MON_FEMALE = 1 << 14, 1 << 13, 1 << 12
+OBJ_EVENT_MON_FLAGS = OBJ_EVENT_MON | OBJ_EVENT_MON_SHINY | OBJ_EVENT_MON_FEMALE
 
 # OBJ_EVENT_GFX_* names from pokeemerald-expansion 1.13.2 (ids 0-241). A hack can
 # redraw these or add its own ids above 241, so treat the name as a hint only.
@@ -96,72 +129,79 @@ TEXT_EXTRA = {0x01: "À", 0x02: "Á", 0x03: "Â", 0x04: "Ç", 0x05: "È", 0x06: 
               0xF3: "Ü", 0xF4: "ä", 0xF5: "ö", 0xF6: "ü"}
 PLACEHOLDERS = {0x01: "{PLAYER}", 0x02: "{STR_VAR_1}", 0x03: "{STR_VAR_2}",
                 0x04: "{STR_VAR_3}", 0x06: "{RIVAL}"}
+# argument bytes of the EXT_CTRL_CODE_BEGIN control codes (by code id)
 FC_ARGS = {0x04: 3, 0x0B: 2, 0x10: 2, 0x07: 0, 0x09: 0, 0x0A: 0, 0x0F: 0, 0x15: 0,
-           0x16: 0, 0x17: 0, 0x18: 0}   # default: 1 argument byte
+           0x16: 0, 0x17: 0, 0x18: 0}
+DEFAULT_FC_ARGS = 1
 
 
-def decode(rom, o, maxlen=600, newline=" "):
+def decode(rom, offset, maxlen=MAX_TEXT_LENGTH, newline=" "):
     """Full-length game text -> str. Line breaks become `newline`; unknown bytes
     are kept as [XX] so nothing disappears silently."""
-    d, out, i = rom.d, [], o
-    while i < min(o + maxlen, rom.L):
-        c = d[i]
-        if c == 0xFF: break
-        if c in (0xFE, 0xFA, 0xFB): out.append(newline); i += 1; continue
-        if c == 0xFC:
-            i += 2 + FC_ARGS.get(d[i + 1], 1); continue
-        if c == 0xFD:
-            out.append(PLACEHOLDERS.get(d[i + 1], "{VAR_%02X}" % d[i + 1])); i += 2; continue
-        ch = CHARMAP.get(c, TEXT_EXTRA.get(c))
-        out.append(ch if ch is not None else "[%02X]" % c)
+    data, out, i = rom.data, [], offset
+    while i < min(offset + maxlen, rom.size):
+        char_code = data[i]
+        if char_code == TEXT_END: break
+        if char_code in (CHAR_NEWLINE, CHAR_PROMPT_SCROLL, CHAR_PROMPT_CLEAR): out.append(newline); i += 1; continue
+        if char_code == EXT_CTRL_CODE_BEGIN:
+            code_id = data[i + 1]
+            i += CONTROL_SEQUENCE_LENGTH + FC_ARGS.get(code_id, DEFAULT_FC_ARGS); continue
+        if char_code == PLACEHOLDER_BEGIN:
+            placeholder_id = data[i + 1]
+            out.append(PLACEHOLDERS.get(placeholder_id, "{VAR_%02X}" % placeholder_id)); i += CONTROL_SEQUENCE_LENGTH; continue
+        character = CHARMAP.get(char_code, TEXT_EXTRA.get(char_code))
+        out.append(character if character is not None else "[%02X]" % char_code)
         i += 1
-    s = "".join(out)
-    return re.sub(r"[ ]{2,}", " ", s).strip() if newline == " " else s.strip()
+    text = "".join(out)
+    return re.sub(r"[ ]{2,}", " ", text).strip() if newline == " " else text.strip()
 
 
 # ------------------------------------------------------------- quest table --
-def text_ptr_ok(rom, v, maxlen=400):
-    if not rom.isptr(v): return False
-    o = rom.off(v)
-    seg = rom.d[o:o + maxlen]
-    return 0xFF in seg and seg.index(0xFF) >= 1
+def text_ptr_ok(rom, pointer, maxlen=MAX_QUEST_TEXT_LENGTH):
+    """A pointer to a non-empty string that ends within maxlen bytes."""
+    if not rom.isptr(pointer): return False
+    offset = rom.off(pointer)
+    seg = rom.data[offset:offset + maxlen]
+    return TEXT_END in seg and seg.index(TEXT_END) > 0
 
 
-def side_quest_ok(rom, o):
-    if o + SIDE_QUEST_SIZE > rom.L: return False
-    if not all(text_ptr_ok(rom, rom.u32(o + k)) for k in (0, 4, 8, 12)): return False
-    if rom.d[o + 18] not in SPRITE_TYPES: return False
-    if not rom.is_clean_text(rom.off(rom.u32(o + 12)), 2, 30): return False   # map name
-    sq, n = rom.u32(o + 20), rom.d[o + 24]
-    if sq == 0: return n == 0
-    return rom.isptr(sq) and 0 < n < 100
+def side_quest_ok(rom, offset):
+    if offset + SIDE_QUEST_SIZE > rom.size: return False
+    if not all(text_ptr_ok(rom, rom.u32(offset + field)) for field in SIDE_QUEST_TEXT_FIELDS): return False
+    if rom.data[offset + SIDE_QUEST_SPRITE_TYPE] not in SPRITE_TYPES: return False
+    if not rom.is_clean_text(rom.off(rom.u32(offset + SIDE_QUEST_MAP)), QUEST_MAP_NAME_MIN_LENGTH, QUEST_MAP_NAME_MAX_LENGTH):
+        return False
+    subquests_pointer = rom.u32(offset + SIDE_QUEST_SUBQUESTS)
+    subquest_count = rom.data[offset + SIDE_QUEST_SUBQUEST_COUNT]
+    if subquests_pointer == 0: return subquest_count == 0
+    return rom.isptr(subquests_pointer) and 0 < subquest_count < MAX_SUBQUESTS
 
 
 def find_quest_table(rom):
     """Longest run of SideQuest-shaped entries. Returns (offset, count)."""
-    best, o = (None, 0), 0
-    while o < rom.L - SIDE_QUEST_SIZE:
-        if side_quest_ok(rom, o):
-            n, q = 0, o
-            while side_quest_ok(rom, q): n += 1; q += SIDE_QUEST_SIZE
-            if n > best[1]: best = (o, n)
-            o = q
+    best_offset, best_count, offset = None, 0, 0
+    while offset < rom.size - SIDE_QUEST_SIZE:
+        if side_quest_ok(rom, offset):
+            run_length, probe_offset = 0, offset
+            while side_quest_ok(rom, probe_offset): run_length += 1; probe_offset += SIDE_QUEST_SIZE
+            if run_length > best_count: best_offset, best_count = offset, run_length
+            offset = probe_offset
         else:
-            o += 4
-    return best
+            offset += POINTER_SIZE
+    return best_offset, best_count
 
 
 # ---------------------------------------------------------------- sprites --
 def sprite_label(sprite, stype, species_name, item_name):
-    if stype == 2:
+    if stype == SPRITE_TYPE_ITEM:
         return "item", item_name(sprite)
-    if stype == 3:
+    if stype == SPRITE_TYPE_POKEMON:
         return "pokemon", species_name(sprite)
     if sprite & OBJ_EVENT_MON:
-        sp = sprite & ~(7 << 12)
-        tags = [t for b, t in ((OBJ_EVENT_MON_SHINY, "shiny"), (OBJ_EVENT_MON_FEMALE, "female"))
-                if sprite & b]
-        return "object (pokemon)", species_name(sp) + (" (%s)" % ", ".join(tags) if tags else "")
+        species_id = sprite & ~OBJ_EVENT_MON_FLAGS
+        tags = [tag for flag_bit, tag in ((OBJ_EVENT_MON_SHINY, "shiny"), (OBJ_EVENT_MON_FEMALE, "female"))
+                if sprite & flag_bit]
+        return "object (pokemon)", species_name(species_id) + (" (%s)" % ", ".join(tags) if tags else "")
     if sprite < len(EXPANSION_GFX_NAMES):
         return "object", EXPANSION_GFX_NAMES[sprite]
     return "object", "hack gfx #%d" % sprite
@@ -169,153 +209,162 @@ def sprite_label(sprite, stype, species_name, item_name):
 
 # ------------------------------------------------------------------- main --
 def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     here = os.path.dirname(os.path.abspath(__file__))
-    ap.add_argument("rom", nargs="?", default=os.path.join(here, "input", "game.gba"))
-    ap.add_argument("-o", "--output", default=os.path.join(here, "output", "quests.csv"),
+    parser.add_argument("rom", nargs="?", default=os.path.join(here, "input", "game.gba"))
+    parser.add_argument("-o", "--output", default=os.path.join(here, "output", "quests.csv"),
                     help="quests CSV; quest_events.csv / subquests.csv go next to it")
-    ap.add_argument("--quest-table", type=lambda s: int(s, 0), help="force sSideQuests offset")
-    ap.add_argument("--quest-count", type=int, help="force the number of quests")
-    ap.add_argument("--questmenu-opcode", type=lambda s: int(s, 0),
+    parser.add_argument("--quest-table", type=lambda text: int(text, 0), help="force sSideQuests offset")
+    parser.add_argument("--quest-count", type=int, help="force the number of quests")
+    parser.add_argument("--questmenu-opcode", type=lambda text: int(text, 0),
                     help="script opcode of `questmenu` (auto-detected, 0x%X here)" % QUESTMENU_OPCODE_DEFAULT)
-    ap.add_argument("--map-groups", type=lambda s: int(s, 0))
-    ap.add_argument("--region-map-entries", type=lambda s: int(s, 0))
-    ap.add_argument("--keep-newlines", action="store_true",
+    parser.add_argument("--map-groups", type=lambda text: int(text, 0))
+    parser.add_argument("--region-map-entries", type=lambda text: int(text, 0))
+    parser.add_argument("--keep-newlines", action="store_true",
                     help="keep the in-game line breaks in descriptions (as \\n)")
-    a = ap.parse_args()
-    log = lambda *x: print(*x, file=sys.stderr)
-    rom = Rom(a.rom)
-    nl = "\n" if a.keep_newlines else " "
+    args = parser.parse_args()
+    log = lambda *parts: print(*parts, file=sys.stderr)
+    rom = Rom(args.rom)
+    newline = "\n" if args.keep_newlines else " "
 
     # --- lookups
-    sb, sstride, snoff, _, scount = find_species(rom)
-    species_name = lambda i: (rom.text(sb + sstride * i + snoff, 20) if 0 < i < scount
-                              else "SPECIES_%d" % i)
+    species_base, sstride, snoff, _, scount = find_species(rom)
+    species_name = lambda species_id: (rom.text(species_base + sstride * species_id + snoff, POKEMON_NAME_LENGTH + 1)
+                                       if 0 < species_id < scount else "SPECIES_%d" % species_id)
     _, _, _, item_name = find_items(rom)
 
     # --- quest table
-    if a.quest_table is not None:
-        qt = a.quest_table
-        qn = a.quest_count or 0
-        if not qn:
-            while side_quest_ok(rom, qt + SIDE_QUEST_SIZE * qn): qn += 1
+    if args.quest_table is not None:
+        quest_table = args.quest_table
+        quest_count = args.quest_count or 0
+        if not quest_count:
+            while side_quest_ok(rom, quest_table + SIDE_QUEST_SIZE * quest_count): quest_count += 1
     else:
-        qt, qn = find_quest_table(rom)
-        if qt is None: raise SystemExit("No Unbound-style quest table (struct SideQuest) found")
-        if a.quest_count: qn = a.quest_count
-    log("sSideQuests       @ 0x%X  (%d quests, %d bytes each)" % (qt, qn, SIDE_QUEST_SIZE))
+        quest_table, quest_count = find_quest_table(rom)
+        if quest_table is None: raise SystemExit("No Unbound-style quest table (struct SideQuest) found")
+        if args.quest_count: quest_count = args.quest_count
+    log("sSideQuests       @ 0x%X  (%d quests, %d bytes each)" % (quest_table, quest_count, SIDE_QUEST_SIZE))
 
     quests, subrows = [], []
-    for i in range(qn):
-        o = qt + SIDE_QUEST_SIZE * i
-        name, desc, done, mp = (rom.off(rom.u32(o + k)) for k in (0, 4, 8, 12))
-        sprite, stype = rom.u16(o + 16), rom.d[o + 18]
-        sq, nsub = rom.u32(o + 20), rom.d[o + 24]
+    for i in range(quest_count):
+        quest_offset = quest_table + SIDE_QUEST_SIZE * i
+        name, desc, done, location_offset = (rom.off(rom.u32(quest_offset + field)) for field in SIDE_QUEST_TEXT_FIELDS)
+        sprite, stype = rom.u16(quest_offset + SIDE_QUEST_SPRITE), rom.data[quest_offset + SIDE_QUEST_SPRITE_TYPE]
+        subquests_pointer = rom.u32(quest_offset + SIDE_QUEST_SUBQUESTS)
+        nsub = rom.data[quest_offset + SIDE_QUEST_SUBQUEST_COUNT]
         kind, label = sprite_label(sprite, stype, species_name, item_name)
         quests.append(OrderedDict([
             ("questNumber", i + 1), ("questId", i),
-            ("name", decode(rom, name)), ("description", decode(rom, desc, newline=nl)),
-            ("completedDescription", decode(rom, done, newline=nl)),
-            ("location", decode(rom, mp)),
+            ("name", decode(rom, name)), ("description", decode(rom, desc, newline=newline)),
+            ("completedDescription", decode(rom, done, newline=newline)),
+            ("location", decode(rom, location_offset)),
             ("spriteType", kind), ("sprite", label), ("spriteId", sprite),
             ("subquests", nsub),
         ]))
-        if sq and nsub:
+        if subquests_pointer and nsub:
             for j in range(nsub):
-                s = rom.off(sq) + SUB_QUEST_SIZE * j
-                skind, slabel = sprite_label(rom.u16(s + 16), rom.d[s + 18], species_name, item_name)
-                ptr = lambda k: decode(rom, rom.off(rom.u32(s + k)), newline=nl) if rom.isptr(rom.u32(s + k)) else ""
-                subrows.append([i + 1, quests[-1]["name"], j + 1, rom.d[s], ptr(4), ptr(8), ptr(12),
-                                skind, slabel, ptr(20)])
+                subquest_offset = rom.off(subquests_pointer) + SUB_QUEST_SIZE * j
+                skind, slabel = sprite_label(rom.u16(subquest_offset + SUB_QUEST_SPRITE),
+                                             rom.data[subquest_offset + SUB_QUEST_SPRITE_TYPE], species_name, item_name)
+                text_at = lambda field: (decode(rom, rom.off(rom.u32(subquest_offset + field)), newline=newline)
+                                         if rom.isptr(rom.u32(subquest_offset + field)) else "")
+                subrows.append([i + 1, quests[-1]["name"], j + 1, rom.data[subquest_offset + SUB_QUEST_ID],
+                                text_at(SUB_QUEST_NAME), text_at(SUB_QUEST_DESCRIPTION), text_at(SUB_QUEST_MAP),
+                                skind, slabel, text_at(SUB_QUEST_LABEL)])
 
     # --- where the quests are used in map scripts
-    op = a.questmenu_opcode
-    if op is None:
-        c = Counter(m.group(1)[0] for m in MACRO_RE.finditer(rom.d))
-        op = c.most_common(1)[0][0] if c else QUESTMENU_OPCODE_DEFAULT
-    log("questmenu opcode  : 0x%X" % op)
+    opcode = args.questmenu_opcode
+    if opcode is None:
+        opcode_counts = Counter(ord(match.group("opcode")) for match in MACRO_RE.finditer(rom.data))
+        opcode = max(opcode_counts, key=opcode_counts.get) if opcode_counts else QUESTMENU_OPCODE_DEFAULT
+    log("questmenu opcode  : 0x%X" % opcode)
 
-    mg = a.map_groups if a.map_groups is not None else find_map_groups(rom)[0]
-    rme = a.region_map_entries if a.region_map_entries is not None else find_region_map_entries(rom)
+    map_groups = args.map_groups
+    if map_groups is None: map_groups, _ = find_map_groups(rom)
+    rme = args.region_map_entries if args.region_map_entries is not None else find_region_map_entries(rom)
     names = mapsec_names(rom, rme) if rme is not None else []
-    maps = list(iter_maps(rom, mg))
+    maps = list(iter_maps(rom, map_groups))
     log("maps              : %d" % len(maps))
 
-    def route(mh):
-        sec = rom.d[mh + 0x14]
+    def route(map_header):
+        sec = rom.data[map_header + MAP_HEADER_REGION_MAP_SECTION]
         return names[sec] if sec < len(names) and names[sec] else "MAPSEC_%d" % sec
 
     entries, _, _ = collect_entries(rom, maps)
-    native_args = learn_native_args(rom, sorted({e[0] for e in entries}))
-    W, cache, reached = Walker(rom, native_args), {}, set()
+    native_args = learn_native_args(rom, sorted({entry.script for entry in entries}))
+    walker, cache, reached = Walker(rom, native_args), {}, set()
     events = []
-    for s, (g, n, mh), x, y, kind, eo in entries:
-        if s not in cache:
-            visited = cache[s] = W.walk(s)[3]
-        visited = cache[s]
+    for script, (map_group, map_num, map_header), x, y, kind, event_offset in entries:
+        if script not in cache:
+            cache[script] = walker.walk(script).visited
+        visited = cache[script]
         reached |= visited
         for pc in sorted(visited):
-            if rom.d[pc] != op: continue
-            case, q = rom.d[pc + 1], rom.d[pc + 2]
-            if case not in QUEST_CASES or case in (0, 10) or q >= qn: continue   # open menu / buffer name
-            events.append([q + 1, quests[q]["name"], QUEST_CASES.get(case, "case%d" % case),
-                           route(mh), "%d.%d" % (g, n), x, y, kind, "0x%X" % (pc + ROM_BASE)])
+            if rom.data[pc] != opcode: continue
+            case, quest_index = command_args(rom, pc, "BB")
+            if case not in QUEST_CASES or case in (QUEST_CASE_OPEN_MENU, QUEST_CASE_BUFFER_NAME) or quest_index >= quest_count:
+                continue
+            events.append(QuestEvent(quest_index + 1, quests[quest_index]["name"], QUEST_CASES.get(case, "case%d" % case),
+                                     route(map_header), "%d.%d" % (map_group, map_num), x, y, kind, "0x%X" % (pc + ROM_BASE)))
 
     # startquest/completequest macros the walker never reached (unused/dynamic scripts)
-    anchors = sorted((s, m) for s, m, *_ in entries)
-    keys = [k for k, _ in anchors]
-    for m in MACRO_RE.finditer(rom.d):
-        pc = m.start() + 4
-        if m.group(1)[0] != op or pc in reached: continue
-        q = m.group(3)[0]
-        if q >= qn: continue
+    anchors = sorted((script, map_info) for script, map_info, *_ in entries)
+    keys = [address for address, _ in anchors]
+    for match in MACRO_RE.finditer(rom.data):
+        pc = match.start() + MACRO_QUESTMENU_AT
+        if ord(match.group("opcode")) != opcode or pc in reached: continue
+        quest_index = ord(match.group("quest"))
+        if quest_index >= quest_count: continue
         k = bisect.bisect_right(keys, pc) - 1
-        r, mid = ("unknown", "") if k < 0 or pc - keys[k] > 0x2000 else \
-                 (route(anchors[k][1][2]), "%d.%d" % anchors[k][1][:2])
-        events.append([q + 1, quests[q]["name"], QUEST_CASES[m.group(2)[0]] + "?", r, mid, "", "",
-                       "unreached", "0x%X" % (pc + ROM_BASE)])
+        if k < 0 or pc - keys[k] > MAX_SCRIPT_DISTANCE:
+            route_name, mid = "unknown", ""
+        else:
+            _, anchor_map = anchors[k]
+            route_name, mid = route(anchor_map.header), "%d.%d" % (anchor_map.group, anchor_map.num)
+        events.append(QuestEvent(quest_index + 1, quests[quest_index]["name"], QUEST_CASES[ord(match.group("case"))] + "?",
+                                 route_name, mid, "", "", "unreached", "0x%X" % (pc + ROM_BASE)))
 
     seen, uniq = set(), []
-    for e in events:
-        if tuple(e) not in seen: seen.add(tuple(e)); uniq.append(e)
-    events = sorted(uniq, key=lambda e: (e[0], list(QUEST_CASES.values()).index(e[2].rstrip("?"))
-                                         if e[2].rstrip("?") in QUEST_CASES.values() else 99, e[4], e[8]))
+    for event in events:
+        if tuple(event) not in seen: seen.add(tuple(event)); uniq.append(event)
+    events = sorted(uniq, key=lambda event: (event.quest_number, ACTION_ORDER.get(event.action.rstrip("?"), len(ACTION_ORDER)),
+                                             event.map_id, event.script_address))
 
     # summarise into the quest rows
-    def where(q, actions):
-        out = OrderedDict()
-        for e in events:
-            if e[0] == q and e[2] in actions:
-                out["%s (%s)" % (e[3], e[4]) if e[4] else e[3]] = 1
-        return "; ".join(out)
-    for qr in quests:
-        q = qr["questNumber"]
-        qr["unlockedAt"] = where(q, {"unlock"})
-        qr["startedAt"] = where(q, {"start", "start?"})
-        qr["rewardAt"] = where(q, {"reward"})
-        qr["completedAt"] = where(q, {"complete", "complete?"})
+    def where(quest_number, actions):
+        places = OrderedDict()
+        for event in events:
+            if event.quest_number == quest_number and event.action in actions:
+                places["%s (%s)" % (event.route, event.map_id) if event.map_id else event.route] = True
+        return "; ".join(places)
+    for quest_row in quests:
+        quest_number = quest_row["questNumber"]
+        quest_row["unlockedAt"] = where(quest_number, {"unlock"})
+        quest_row["startedAt"] = where(quest_number, {"start", "start?"})
+        quest_row["rewardAt"] = where(quest_number, {"reward"})
+        quest_row["completedAt"] = where(quest_number, {"complete", "complete?"})
 
     # --- write
-    out = os.path.abspath(a.output)
+    out = os.path.abspath(args.output)
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f); w.writerow(list(quests[0].keys()))
-        for qr in quests: w.writerow(list(qr.values()))
+    with open(out, "w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file); writer.writerow(list(quests[0].keys()))
+        for quest_row in quests: writer.writerow(list(quest_row.values()))
     ev_path = os.path.join(os.path.dirname(out), "quest_events.csv")
-    with open(ev_path, "w", newline="", encoding="utf-8") as f:
-        w = csv.writer(f)
-        w.writerow(["questNumber", "questName", "action", "route", "mapId", "x", "y", "eventKind", "scriptAddress"])
-        w.writerows(events)
+    with open(ev_path, "w", newline="", encoding="utf-8") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(QUEST_EVENT_COLUMNS)
+        writer.writerows(events)
     log("wrote %d quests -> %s" % (len(quests), out))
-    log("wrote %d quest script events -> %s  %s" % (len(events), ev_path, dict(Counter(e[2] for e in events))))
+    log("wrote %d quest script events -> %s  %s" % (len(events), ev_path, dict(Counter(event.action for event in events))))
     if subrows:
-        sp = os.path.join(os.path.dirname(out), "subquests.csv")
-        with open(sp, "w", newline="", encoding="utf-8") as f:
-            w = csv.writer(f)
-            w.writerow(["questNumber", "questName", "subquestNumber", "subquestId", "name", "description",
+        subquests_path = os.path.join(os.path.dirname(out), "subquests.csv")
+        with open(subquests_path, "w", newline="", encoding="utf-8") as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerow(["questNumber", "questName", "subquestNumber", "subquestId", "name", "description",
                         "location", "spriteType", "sprite", "label"])
-            w.writerows(subrows)
-        log("wrote %d subquests -> %s" % (len(subrows), sp))
+            writer.writerows(subrows)
+        log("wrote %d subquests -> %s" % (len(subrows), subquests_path))
     else:
         log("no subquests defined")
 
